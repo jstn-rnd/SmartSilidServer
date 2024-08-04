@@ -1,0 +1,1 @@
+Get-ADComputer -Filter * -Properties LastLogonDate | Select-Object Name, LastLogonDate

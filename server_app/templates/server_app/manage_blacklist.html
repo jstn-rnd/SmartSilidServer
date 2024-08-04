@@ -1,0 +1,27 @@
+<!-- templates/manage_blacklist.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Manage Blacklist</title>
+</head>
+<body>
+    <h1>Manage Blacklist</h1>
+
+    <h2>Blacklisted URLs</h2>
+    <ul>
+        {% for url in blacklisted_urls %}
+            <li>{{ url.url }}</li>
+        {% empty %}
+            <li>No blacklisted URLs.</li>
+        {% endfor %}
+    </ul>
+
+    <h2>Add/Remove URL</h2>
+    <form method="post" action="{% url 'manage_blacklist' %}">
+        {% csrf_token %}
+        <input type="text" name="url" placeholder="Enter URL" required>
+        <button type="submit" name="action" value="add">Add URL</button>
+        <button type="submit" name="action" value="remove">Remove URL</button>
+    </form>
+</body>
+</html>

@@ -1,0 +1,7 @@
+<h1>Blocked Sites</h1>
+<ul>
+    {% for site in sites %}
+    <li>{{ site.domain }} <a href="{% url 'remove_blocked_site' pk=site.pk %}">Remove</a></li>
+    {% endfor %}
+</ul>
+<a href="{% url 'add_blocked_site' %}">Add New Site</a>
