@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Blacklist URL</title>
+</head>
+<body>
+    <h1>Add Blacklist URL</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Add URL</button>
+    </form>
+    <a href="{% url 'blacklist_list' %}">Back to list</a>
+</body>
+</html>

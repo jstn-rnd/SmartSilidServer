@@ -1,5 +1,6 @@
 from django import forms
 from .models import Blacklist
+from django import forms
 
 from .models import Whitelist, Blacklist
 
@@ -12,4 +13,3 @@ class BlacklistForm(forms.ModelForm):
     class Meta:
         model = Blacklist
         fields = ['url']
-     

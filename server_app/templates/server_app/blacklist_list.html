@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Blacklist URLs</title>
+</head>
+<body>
+    <h1>Blacklist URLs</h1>
+    <ul>
+        {% for url in urls %}
+            <li>{{ url.url }} <a href="{% url 'remove_blacklist_url' url.id %}">Remove</a></li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'add_blacklist_url' %}">Add new URL</a>
+</body>
+</html>
+
