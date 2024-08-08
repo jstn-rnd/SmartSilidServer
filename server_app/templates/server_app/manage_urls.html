@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage URLs</title>
+</head>
+<body>
+    <h1>Manage URLs</h1>
+
+    <!-- Whitelist Section -->
+    <h2>Whitelist</h2>
+    <form method="post" action="{% url 'add_whitelist_url' %}">
+        {% csrf_token %}
+        {{ whitelist_form.url.label_tag }}: {{ whitelist_form.url }}
+        <button type="submit">Add to Whitelist</button>
+    </form>
+
+    <ul>
+        {% for url in whitelisted_urls %}
+            <li>{{ url.url }} <a href="{% url 'remove_whitelist_url' url.id %}">Remove</a></li>
+        {% endfor %}
+    </ul>
+
+    <!-- Blacklist Section -->
+    <h2>Blacklist</h2>
+    <form method="post" action="{% url 'add_blacklist_url' %}">
+        {% csrf_token %}
+        {{ blacklist_form.url.label_tag }}: {{ blacklist_form.url }}
+        <button type="submit">Add to Blacklist</button>
+    </form>
+
+    <ul>
+        {% for url in blacklisted_urls %}
+            <li>{{ url.url }} <a href="{% url 'remove_blacklist_url' url.id %}">Remove</a></li>
+        {% endfor %}
+    </ul>
+
+</body>
+</html>

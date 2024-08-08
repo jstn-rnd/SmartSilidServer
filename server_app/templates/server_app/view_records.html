@@ -1,0 +1,91 @@
+<!-- rfidApp/templates/rfidApp/view_records.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RFID Records</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .container {
+            width: 80%;
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>RFID Records</h1>
+
+        <h2>Tests</h2>
+        <form action="{% url 'update_approve_status' %}" method="post">
+            {% csrf_token %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>RFID</th>
+                        <th>Approved</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for test in tests %}
+                    <tr>
+                        <td>{{ test.id }}</td>
+                        <td>{{ test.RFID }}</td>
+                        <td>
+                            <select name="approve_{{ test.id }}">
+                                <option value="0" {% if test.approved == 0 %}selected{% endif %}>No</option>
+                                <option value="1" {% if test.approved == 1 %}selected{% endif %}>Yes</option>
+                            </select>
+                        </td>
+                        <td>
+                            <button type="submit" name="test_id" value="{{ test.id }}">Update</button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4">No records found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </form>
+
+        <h2>MAC Addresses</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>MAC Address</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for mac in mac_addresses %}
+                <tr>
+                    <td>{{ mac.id }}</td>
+                    <td>{{ mac.mac_address }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="2">No records found</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

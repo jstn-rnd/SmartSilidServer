@@ -1,0 +1,12 @@
+<!-- select_and_wake.html -->
+<form action="{% url 'select_and_wake_computers' %}" method="post">
+    {% csrf_token %}
+    <h3>Select Computers to Wake (Select at least 2):</h3>
+    {% for computer in computers %}
+        <div>
+            <input type="checkbox" name="computers" value="{{ computer }}">
+            <label for="computers">{{ computer }}</label>
+        </div>
+    {% endfor %}
+    <button type="submit">Wake Selected Computers</button>
+</form>
