@@ -1,0 +1,638 @@
+ERROR:root:An error occurred while updating GPO: GPMgmt.GPM.GetGPO
+Traceback (most recent call last):
+  File "C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_blocked.py", line 26, in update_gpo
+    gpo = gpm.GetGPO(gpo_guid)
+          ^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\win32com\client\dynamic.py", line 638, in __getattr__
+    raise AttributeError("%s.%s" % (self._username_, attr))
+AttributeError: GPMgmt.GPM.GetGPO
+ERROR:django.request:Internal Server Error: /blacklist/
+Traceback (most recent call last):
+  File "C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_blocked.py", line 26, in update_gpo
+    gpo = gpm.GetGPO(gpo_guid)
+          ^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\win32com\client\dynamic.py", line 638, in __getattr__
+    raise AttributeError("%s.%s" % (self._username_, attr))
+AttributeError: GPMgmt.GPM.GetGPO
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_blocked.py", line 99, in blacklist_view
+    update_gpo()
+  File "C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_blocked.py", line 56, in update_gpo
+    raise Exception(f"An error occurred while updating GPO: {e}")
+Exception: An error occurred while updating GPO: GPMgmt.GPM.GetGPO
+ERROR:root:An error occurred while updating GPO: GPMgmt.GPM.GetGPO
+Traceback (most recent call last):
+  File "C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_blocked.py", line 26, in update_gpo
+    gpo = gpm.GetGPO(gpo_guid)
+          ^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\win32com\client\dynamic.py", line 638, in __getattr__
+    raise AttributeError("%s.%s" % (self._username_, attr))
+AttributeError: GPMgmt.GPM.GetGPO
+ERROR:django.request:Internal Server Error: /blacklist/
+Traceback (most recent call last):
+  File "C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_blocked.py", line 26, in update_gpo
+    gpo = gpm.GetGPO(gpo_guid)
+          ^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\win32com\client\dynamic.py", line 638, in __getattr__
+    raise AttributeError("%s.%s" % (self._username_, attr))
+AttributeError: GPMgmt.GPM.GetGPO
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_blocked.py", line 99, in blacklist_view
+    update_gpo()
+  File "C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_blocked.py", line 56, in update_gpo
+    raise Exception(f"An error occurred while updating GPO: {e}")
+Exception: An error occurred while updating GPO: GPMgmt.GPM.GetGPO
+ERROR:root:An error occurred while updating GPO: GPMgmt.GPM.GetGPO
+Traceback (most recent call last):
+  File "C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_blocked.py", line 26, in update_gpo
+    gpo = gpm.GetGPO(gpo_guid)
+          ^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\win32com\client\dynamic.py", line 638, in __getattr__
+    raise AttributeError("%s.%s" % (self._username_, attr))
+AttributeError: GPMgmt.GPM.GetGPO
+ERROR:django.request:Internal Server Error: /blacklist/
+Traceback (most recent call last):
+  File "C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_blocked.py", line 26, in update_gpo
+    gpo = gpm.GetGPO(gpo_guid)
+          ^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\win32com\client\dynamic.py", line 638, in __getattr__
+    raise AttributeError("%s.%s" % (self._username_, attr))
+AttributeError: GPMgmt.GPM.GetGPO
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_blocked.py", line 99, in blacklist_view
+    update_gpo()
+  File "C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_blocked.py", line 56, in update_gpo
+    raise Exception(f"An error occurred while updating GPO: {e}")
+Exception: An error occurred while updating GPO: GPMgmt.GPM.GetGPO
+ERROR:root:An error occurred while updating GPO: GPMgmt.GPM.GetGPO
+Traceback (most recent call last):
+  File "C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_blocked.py", line 26, in update_gpo
+    gpo = gpm.GetGPO(gpo_guid)
+          ^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\win32com\client\dynamic.py", line 638, in __getattr__
+    raise AttributeError("%s.%s" % (self._username_, attr))
+AttributeError: GPMgmt.GPM.GetGPO
+ERROR:django.request:Internal Server Error: /blacklist/
+Traceback (most recent call last):
+  File "C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_blocked.py", line 26, in update_gpo
+    gpo = gpm.GetGPO(gpo_guid)
+          ^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\win32com\client\dynamic.py", line 638, in __getattr__
+    raise AttributeError("%s.%s" % (self._username_, attr))
+AttributeError: GPMgmt.GPM.GetGPO
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_blocked.py", line 99, in blacklist_view
+    update_gpo()
+  File "C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_blocked.py", line 56, in update_gpo
+    raise Exception(f"An error occurred while updating GPO: {e}")
+Exception: An error occurred while updating GPO: GPMgmt.GPM.GetGPO
+ERROR:root:An error occurred while updating GPO: GPMgmt.GPM.GetGPO
+Traceback (most recent call last):
+  File "C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_blocked.py", line 26, in update_gpo
+    gpo = gpm.GetGPO(gpo_guid)
+          ^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\win32com\client\dynamic.py", line 638, in __getattr__
+    raise AttributeError("%s.%s" % (self._username_, attr))
+AttributeError: GPMgmt.GPM.GetGPO
+ERROR:django.request:Internal Server Error: /blacklist/
+Traceback (most recent call last):
+  File "C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_blocked.py", line 26, in update_gpo
+    gpo = gpm.GetGPO(gpo_guid)
+          ^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\win32com\client\dynamic.py", line 638, in __getattr__
+    raise AttributeError("%s.%s" % (self._username_, attr))
+AttributeError: GPMgmt.GPM.GetGPO
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_blocked.py", line 94, in blacklist_view
+    update_gpo()
+  File "C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_blocked.py", line 56, in update_gpo
+    raise Exception(f"An error occurred while updating GPO: {e}")
+Exception: An error occurred while updating GPO: GPMgmt.GPM.GetGPO
+INFO:django.utils.autoreload:C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_blocked.py changed, reloading.
+ERROR:root:An error occurred while updating GPO: GPMgmt.GPM.GetGPO
+Traceback (most recent call last):
+  File "C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_blocked.py", line 26, in update_gpo
+    gpo = gpm.GetGPO(gpo_guid)
+          ^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\win32com\client\dynamic.py", line 638, in __getattr__
+    raise AttributeError("%s.%s" % (self._username_, attr))
+AttributeError: GPMgmt.GPM.GetGPO
+ERROR:django.request:Internal Server Error: /blacklist/
+Traceback (most recent call last):
+  File "C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_blocked.py", line 26, in update_gpo
+    gpo = gpm.GetGPO(gpo_guid)
+          ^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\win32com\client\dynamic.py", line 638, in __getattr__
+    raise AttributeError("%s.%s" % (self._username_, attr))
+AttributeError: GPMgmt.GPM.GetGPO
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_blocked.py", line 88, in blacklist_view
+    update_gpo()
+  File "C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_blocked.py", line 45, in update_gpo
+    raise Exception(f"An error occurred while updating GPO: {e}")
+Exception: An error occurred while updating GPO: GPMgmt.GPM.GetGPO
+ERROR:root:An error occurred while updating GPO: GPMgmt.GPM.GetGPO
+Traceback (most recent call last):
+  File "C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_blocked.py", line 26, in update_gpo
+    gpo = gpm.GetGPO(gpo_guid)
+          ^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\win32com\client\dynamic.py", line 638, in __getattr__
+    raise AttributeError("%s.%s" % (self._username_, attr))
+AttributeError: GPMgmt.GPM.GetGPO
+ERROR:django.request:Internal Server Error: /blacklist/
+Traceback (most recent call last):
+  File "C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_blocked.py", line 26, in update_gpo
+    gpo = gpm.GetGPO(gpo_guid)
+          ^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\win32com\client\dynamic.py", line 638, in __getattr__
+    raise AttributeError("%s.%s" % (self._username_, attr))
+AttributeError: GPMgmt.GPM.GetGPO
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_blocked.py", line 83, in blacklist_view
+    update_gpo()
+  File "C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_blocked.py", line 45, in update_gpo
+    raise Exception(f"An error occurred while updating GPO: {e}")
+Exception: An error occurred while updating GPO: GPMgmt.GPM.GetGPO
+INFO:django.utils.autoreload:C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_blocked.py changed, reloading.
+ERROR:root:An error occurred while updating GPO: (-2147221005, 'Invalid class string', None, None)
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\win32com\client\dynamic.py", line 84, in _GetGoodDispatch
+    IDispatch = pythoncom.connect(IDispatch)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pywintypes.com_error: (-2147221005, 'Invalid class string', None, None)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_blocked.py", line 22, in update_gpo
+    gpo_management = win32com.client.Dispatch("SomeOther.GPOManagement")  # Replace with correct COM object
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\win32com\client\__init__.py", line 118, in Dispatch
+    dispatch, userName = dynamic._GetGoodDispatchAndUserName(dispatch, userName, clsctx)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\win32com\client\dynamic.py", line 104, in _GetGoodDispatchAndUserName
+    return (_GetGoodDispatch(IDispatch, clsctx), userName)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\win32com\client\dynamic.py", line 86, in _GetGoodDispatch
+    IDispatch = pythoncom.CoCreateInstance(
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pywintypes.com_error: (-2147221005, 'Invalid class string', None, None)
+ERROR:django.request:Internal Server Error: /blacklist/
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\win32com\client\dynamic.py", line 84, in _GetGoodDispatch
+    IDispatch = pythoncom.connect(IDispatch)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pywintypes.com_error: (-2147221005, 'Invalid class string', None, None)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_blocked.py", line 22, in update_gpo
+    gpo_management = win32com.client.Dispatch("SomeOther.GPOManagement")  # Replace with correct COM object
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\win32com\client\__init__.py", line 118, in Dispatch
+    dispatch, userName = dynamic._GetGoodDispatchAndUserName(dispatch, userName, clsctx)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\win32com\client\dynamic.py", line 104, in _GetGoodDispatchAndUserName
+    return (_GetGoodDispatch(IDispatch, clsctx), userName)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\win32com\client\dynamic.py", line 86, in _GetGoodDispatch
+    IDispatch = pythoncom.CoCreateInstance(
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pywintypes.com_error: (-2147221005, 'Invalid class string', None, None)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_blocked.py", line 88, in blacklist_view
+    update_gpo()
+  File "C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_blocked.py", line 45, in update_gpo
+    raise Exception(f"An error occurred while updating GPO: {e}")
+Exception: An error occurred while updating GPO: (-2147221005, 'Invalid class string', None, None)
+ERROR:root:An error occurred while updating GPO: (-2147221005, 'Invalid class string', None, None)
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\win32com\client\dynamic.py", line 84, in _GetGoodDispatch
+    IDispatch = pythoncom.connect(IDispatch)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pywintypes.com_error: (-2147221005, 'Invalid class string', None, None)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_blocked.py", line 22, in update_gpo
+    gpo_management = win32com.client.Dispatch("SomeOther.GPOManagement")  # Replace with correct COM object
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\win32com\client\__init__.py", line 118, in Dispatch
+    dispatch, userName = dynamic._GetGoodDispatchAndUserName(dispatch, userName, clsctx)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\win32com\client\dynamic.py", line 104, in _GetGoodDispatchAndUserName
+    return (_GetGoodDispatch(IDispatch, clsctx), userName)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\win32com\client\dynamic.py", line 86, in _GetGoodDispatch
+    IDispatch = pythoncom.CoCreateInstance(
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pywintypes.com_error: (-2147221005, 'Invalid class string', None, None)
+ERROR:django.request:Internal Server Error: /blacklist/
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\win32com\client\dynamic.py", line 84, in _GetGoodDispatch
+    IDispatch = pythoncom.connect(IDispatch)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pywintypes.com_error: (-2147221005, 'Invalid class string', None, None)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_blocked.py", line 22, in update_gpo
+    gpo_management = win32com.client.Dispatch("SomeOther.GPOManagement")  # Replace with correct COM object
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\win32com\client\__init__.py", line 118, in Dispatch
+    dispatch, userName = dynamic._GetGoodDispatchAndUserName(dispatch, userName, clsctx)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\win32com\client\dynamic.py", line 104, in _GetGoodDispatchAndUserName
+    return (_GetGoodDispatch(IDispatch, clsctx), userName)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\win32com\client\dynamic.py", line 86, in _GetGoodDispatch
+    IDispatch = pythoncom.CoCreateInstance(
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pywintypes.com_error: (-2147221005, 'Invalid class string', None, None)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_blocked.py", line 83, in blacklist_view
+    update_gpo()
+  File "C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_blocked.py", line 45, in update_gpo
+    raise Exception(f"An error occurred while updating GPO: {e}")
+Exception: An error occurred while updating GPO: (-2147221005, 'Invalid class string', None, None)
+WARNING:django.request:Not Found: /wol/select/
+WARNING:django.request:Not Found: /favicon.ico
+WARNING:django.request:Not Found: /wol/select
+WARNING:django.request:Not Found: /wol/select
+WARNING:django.request:Not Found: /wol/select
+WARNING:django.request:Not Found: /wol/select
+WARNING:django.request:Not Found: /wol/select/
+WARNING:django.request:Not Found: /wol/select/
+WARNING:django.request:Not Found: /wol/select/
+WARNING:django.request:Not Found: /wol/select/
+WARNING:django.request:Not Found: /wol/select/
+WARNING:django.request:Not Found: /wol/select/
+WARNING:django.request:Not Found: /wol/select/
+WARNING:django.request:Not Found: /wol/select/
+WARNING:django.request:Not Found: /wol/select/
+WARNING:django.request:Not Found: /wol/select/
+WARNING:django.request:Not Found: /wol/select/
+WARNING:django.request:Not Found: /wol/select/
+WARNING:django.request:Not Found: /wol/select/
+WARNING:django.request:Not Found: /wol/select/
+WARNING:django.request:Not Found: /wol/select/
+WARNING:django.request:Not Found: /wol/select/
+ERROR:root:An error occurred while updating GPO: (-2147221005, 'Invalid class string', None, None)
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\win32com\client\dynamic.py", line 84, in _GetGoodDispatch
+    IDispatch = pythoncom.connect(IDispatch)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pywintypes.com_error: (-2147221005, 'Invalid class string', None, None)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_blocked.py", line 22, in update_gpo
+    gpo_management = win32com.client.Dispatch("SomeOther.GPOManagement")  # Replace with correct COM object
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\win32com\client\__init__.py", line 118, in Dispatch
+    dispatch, userName = dynamic._GetGoodDispatchAndUserName(dispatch, userName, clsctx)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\win32com\client\dynamic.py", line 104, in _GetGoodDispatchAndUserName
+    return (_GetGoodDispatch(IDispatch, clsctx), userName)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\win32com\client\dynamic.py", line 86, in _GetGoodDispatch
+    IDispatch = pythoncom.CoCreateInstance(
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pywintypes.com_error: (-2147221005, 'Invalid class string', None, None)
+ERROR:django.request:Internal Server Error: /blacklist/
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\win32com\client\dynamic.py", line 84, in _GetGoodDispatch
+    IDispatch = pythoncom.connect(IDispatch)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pywintypes.com_error: (-2147221005, 'Invalid class string', None, None)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_blocked.py", line 22, in update_gpo
+    gpo_management = win32com.client.Dispatch("SomeOther.GPOManagement")  # Replace with correct COM object
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\win32com\client\__init__.py", line 118, in Dispatch
+    dispatch, userName = dynamic._GetGoodDispatchAndUserName(dispatch, userName, clsctx)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\win32com\client\dynamic.py", line 104, in _GetGoodDispatchAndUserName
+    return (_GetGoodDispatch(IDispatch, clsctx), userName)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\win32com\client\dynamic.py", line 86, in _GetGoodDispatch
+    IDispatch = pythoncom.CoCreateInstance(
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pywintypes.com_error: (-2147221005, 'Invalid class string', None, None)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_blocked.py", line 83, in blacklist_view
+    update_gpo()
+  File "C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_blocked.py", line 45, in update_gpo
+    raise Exception(f"An error occurred while updating GPO: {e}")
+Exception: An error occurred while updating GPO: (-2147221005, 'Invalid class string', None, None)
+INFO:django.utils.autoreload:C:\Users\Administrator\Desktop\smartsilid_server\server_app\models.py changed, reloading.
+INFO:django.utils.autoreload:C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_users.py changed, reloading.
+INFO:django.utils.autoreload:C:\Users\Administrator\Desktop\smartsilid_server\server_app\models.py changed, reloading.
+INFO:django.utils.autoreload:C:\Users\Administrator\Desktop\smartsilid_server\server_app\models.py changed, reloading.
+INFO:django.utils.autoreload:C:\Users\Administrator\Desktop\smartsilid_server\smartsilid_server\settings.py changed, reloading.
+WARNING:django.request:Not Found: /select_and_wake_computers
+WARNING:django.request:Not Found: /select_and_wake_computers
+WARNING:django.request:Not Found: /select_and_wake_computers
+WARNING:django.request:Not Found: /select_and_wake_computers
+WARNING:django.request:Not Found: /select_and_wake_computers
+WARNING:django.request:Not Found: /select_and_wake_computers
+WARNING:django.request:Not Found: /select_and_wake_computers
+WARNING:django.request:Not Found: /select_and_wake_computers
+WARNING:django.request:Not Found: /select_and_wake_computers
+WARNING:django.request:Not Found: /select_and_wake_computers
+WARNING:django.request:Not Found: /select_and_wake_computers
+INFO:django.utils.autoreload:C:\Users\Administrator\Desktop\smartsilid_server\smartsilid_server\settings.py changed, reloading.
+INFO:django.utils.autoreload:C:\Users\Administrator\Desktop\smartsilid_server\smartsilid_server\settings.py changed, reloading.
+ERROR:django.request:Internal Server Error: /admin/server_app/test/
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\db\backends\sqlite3\base.py", line 329, in execute
+    return super().execute(query, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such table: server_app_user
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\contrib\admin\options.py", line 716, in wrapper
+    return self.admin_site.admin_view(view)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\utils\decorators.py", line 188, in _view_wrapper
+    result = _process_exception(request, e)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\utils\decorators.py", line 186, in _view_wrapper
+    response = view_func(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\views\decorators\cache.py", line 80, in _view_wrapper
+    response = view_func(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\contrib\admin\sites.py", line 228, in inner
+    if not self.has_permission(request):
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\contrib\admin\sites.py", line 201, in has_permission
+    return request.user.is_active and request.user.is_staff
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\utils\functional.py", line 251, in inner
+    self._setup()
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\utils\functional.py", line 404, in _setup
+    self._wrapped = self._setupfunc()
+                    ^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\contrib\auth\middleware.py", line 33, in <lambda>
+    request.user = SimpleLazyObject(lambda: get_user(request))
+                                            ^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\contrib\auth\middleware.py", line 13, in get_user
+    request._cached_user = auth.get_user(request)
+                           ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\contrib\auth\__init__.py", line 216, in get_user
+    user = backend.get_user(user_id)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\contrib\auth\backends.py", line 157, in get_user
+    user = UserModel._default_manager.get(pk=user_id)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\db\models\query.py", line 645, in get
+    num = len(clone)
+          ^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\db\models\query.py", line 382, in __len__
+    self._fetch_all()
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\db\models\query.py", line 1928, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\db\models\query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+              ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\db\models\sql\compiler.py", line 1562, in execute_sql
+    cursor.execute(sql, params)
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\db\backends\sqlite3\base.py", line 329, in execute
+    return super().execute(query, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+django.db.utils.OperationalError: no such table: server_app_user
+ERROR:django.request:Internal Server Error: /admin/auth/user/
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\db\backends\sqlite3\base.py", line 329, in execute
+    return super().execute(query, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such table: server_app_user
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\contrib\admin\sites.py", line 259, in wrapper
+    return self.admin_view(view, cacheable)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\utils\decorators.py", line 188, in _view_wrapper
+    result = _process_exception(request, e)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\utils\decorators.py", line 186, in _view_wrapper
+    response = view_func(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\views\decorators\cache.py", line 80, in _view_wrapper
+    response = view_func(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\contrib\admin\sites.py", line 228, in inner
+    if not self.has_permission(request):
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\contrib\admin\sites.py", line 201, in has_permission
+    return request.user.is_active and request.user.is_staff
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\utils\functional.py", line 251, in inner
+    self._setup()
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\utils\functional.py", line 404, in _setup
+    self._wrapped = self._setupfunc()
+                    ^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\contrib\auth\middleware.py", line 33, in <lambda>
+    request.user = SimpleLazyObject(lambda: get_user(request))
+                                            ^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\contrib\auth\middleware.py", line 13, in get_user
+    request._cached_user = auth.get_user(request)
+                           ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\contrib\auth\__init__.py", line 216, in get_user
+    user = backend.get_user(user_id)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\contrib\auth\backends.py", line 157, in get_user
+    user = UserModel._default_manager.get(pk=user_id)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\db\models\query.py", line 645, in get
+    num = len(clone)
+          ^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\db\models\query.py", line 382, in __len__
+    self._fetch_all()
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\db\models\query.py", line 1928, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\db\models\query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+              ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\db\models\sql\compiler.py", line 1562, in execute_sql
+    cursor.execute(sql, params)
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\db\backends\sqlite3\base.py", line 329, in execute
+    return super().execute(query, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+django.db.utils.OperationalError: no such table: server_app_user
+WARNING:django.request:Not Found: /admin/auth/user/
+INFO:django.utils.autoreload:C:\Users\Administrator\Desktop\smartsilid_server\server_app\models.py changed, reloading.
+INFO:django.utils.autoreload:C:\Users\Administrator\Desktop\smartsilid_server\server_app\admin.py changed, reloading.
+INFO:django.utils.autoreload:C:\Users\Administrator\Desktop\smartsilid_server\server_app\admin.py changed, reloading.
+INFO:django.utils.autoreload:C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_users.py changed, reloading.
+INFO:django.utils.autoreload:C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_users.py changed, reloading.
+INFO:django.utils.autoreload:C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_users.py changed, reloading.
+INFO:django.utils.autoreload:C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_users.py changed, reloading.
+INFO:django.utils.autoreload:C:\Users\Administrator\Desktop\smartsilid_server\server_app\admin.py changed, reloading.
+INFO:django.utils.autoreload:C:\Users\Administrator\Desktop\smartsilid_server\server_app\models.py changed, reloading.
+INFO:django.utils.autoreload:C:\Users\Administrator\Desktop\smartsilid_server\server_app\models.py changed, reloading.
+INFO:django.utils.autoreload:C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_logs.py changed, reloading.
+INFO:django.utils.autoreload:C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_users.py changed, reloading.
+INFO:django.utils.autoreload:C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_users.py changed, reloading.
+INFO:django.utils.autoreload:C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_users.py changed, reloading.
+INFO:django.utils.autoreload:C:\Users\Administrator\Desktop\smartsilid_server\server_app\views_logs.py changed, reloading.

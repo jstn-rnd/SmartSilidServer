@@ -1,8 +1,20 @@
 from django.db import models
+from django.contrib.auth.models import AbstractUser
 
+<<<<<<< HEAD
 class UserLogs(models.Model):
     id = models.AutoField(primary_key=True)
     userName = models.CharField(default=" ", max_length=255)
+=======
+class User(AbstractUser):
+    middle_initial = models.CharField(default=" ", max_length=255)
+    type = models.CharField(default=" ", max_length=255)
+    section = models.CharField(default=" ", max_length=255)
+
+class UserLog(models.Model): 
+    id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='UserLogs')
+>>>>>>> b9310c098e9325de4fd6ef68270268cfac9f8491
     dateTime = models.DateTimeField()
 
 class ComputerLogs(models.Model):

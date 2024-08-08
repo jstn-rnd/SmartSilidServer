@@ -1,0 +1,32 @@
+<!-- server_app/templates/whitelist.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Whitelist URLs</title>
+</head>
+<body>
+    <h1>Manage Whitelist</h1>
+    <form method="post">
+        {% csrf_token %}
+        <input type="text" name="url" placeholder="Enter URL to add" required>
+        <button type="submit" name="add">Add to Whitelist</button>
+    </form>
+
+    <h2>Current Whitelist</h2>
+    <ul>
+        {% for item in whitelist %}
+        <li>
+            {{ item.url }}
+            <form method="post" style="display:inline;">
+                {% csrf_token %}
+                <input type="hidden" name="url" value="{{ item.url }}">
+                <button type="submit" name="remove">Remove from Whitelist</button>
+            </form>
+        </li>
+        {% empty %}
+        <li>No URLs in the whitelist.</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
