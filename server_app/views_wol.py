@@ -1,15 +1,37 @@
-# views.py
+import subprocess
 from django.http import HttpResponse
 from wakeonlan import send_magic_packet
 from django.shortcuts import render
+from .models import StudentMAC
 
-# Predefined list of computers and their MAC addresses
-COMPUTERS = {
-    'Computer 1': '00:11:22:33:44:55',
-    'Computer 2': '66:77:88:99:AA:BB',
-    'Computer 3': 'CC:DD:EE:FF:00:11',
-    'Computer 4': '22:33:44:55:66:77',
-}
+def normalize_mac(mac_address):
+    """Normalize MAC address to be without hyphens and lowercase."""
+    return mac_address.replace('-', ':').lower()
+
+def get_ip_from_mac(mac_address):
+    """Retrieve the IP address associated with a MAC address using ARP."""
+    try:
+        result = subprocess.run(['arp', '-a'], capture_output=True, text=True)
+        arp_table = result.stdout
+        
+        # Normalize the MAC address to match the format in the ARP table
+        normalized_mac = mac_address.replace('-', ':').lower()
+        
+        # Log ARP table for debugging
+        print("ARP Table:")
+        print(arp_table)
+        
+        for line in arp_table.splitlines():
+            parts = line.split()
+            if len(parts) >= 3 and parts[1].lower() == normalized_mac:
+                ip_address = parts[0]
+                print(f"Found IP address {ip_address} for MAC address {mac_address}")
+                return ip_address
+    except Exception as e:
+        print(f"Error while retrieving IP from MAC: {e}")
+    
+    print(f"MAC address {mac_address} not found in ARP table.")
+    return None
 
 def select_and_wake_computers(request):
     if request.method == 'POST':
@@ -19,14 +41,55 @@ def select_and_wake_computers(request):
             return HttpResponse("Please select at least 2 computers.", status=400)
         
         try:
-            # Send magic packets to the selected computers
             for computer in selected_computers:
-                mac_address = COMPUTERS.get(computer)
-                if mac_address:
-                    send_magic_packet(mac_address)
+                student_mac = StudentMAC.objects.filter(computer_name=computer).first()
+                if student_mac:
+                    normalized_mac = normalize_mac(student_mac.mac_address)
+                    send_magic_packet(normalized_mac)
             return HttpResponse(f"Sent magic packets to: {', '.join(selected_computers)}")
         except Exception as e:
             return HttpResponse(f"Failed to send magic packets: {str(e)}", status=500)
 
-    # Render a form to select computers
-    return render(request, 'select_and_wake.html', {'computers': COMPUTERS.keys()})
+    return render(request, 'server_app/select_and_wake.html', {'computers': StudentMAC.objects.values_list('computer_name', flat=True)})
+
+def shutdown_computers(request):
+    if request.method == 'POST':
+        computers = request.POST.getlist('computers')
+        if not computers:
+            return HttpResponse("No computers selected.", status=400)
+        
+        failed_computers = []
+        
+        for computer in computers:
+            student_mac = StudentMAC.objects.filter(computer_name=computer).first()
+            if not student_mac:
+                failed_computers.append((computer, "MAC address not found"))
+                continue
+            
+            ip_address = get_ip_from_mac(student_mac.mac_address)
+            if not ip_address:
+                failed_computers.append((computer, f"IP address not found for MAC address {student_mac.mac_address}"))
+                continue
+            
+            try:
+                # Log the command for debugging
+                command = ['shutdown', '/s', '/f', '/t', '0', '/m', f'\\\\{ip_address}']
+                print(f"Executing command: {' '.join(command)}")
+                result = subprocess.run(command, capture_output=True, text=True, shell=True)
+                
+                # Capture and log output and errors
+                if result.returncode != 0:
+                    failed_computers.append((computer, f"Failed to execute command. Error: {result.stderr.strip()}"))
+                else:
+                    print(f"Shutdown command output: {result.stdout.strip()}")
+                
+            except Exception as e:
+                failed_computers.append((computer, f"Exception occurred: {str(e)}"))
+        
+        if failed_computers:
+            error_messages = "\n".join([f"Failed to shutdown {comp} (MAC: {StudentMAC.objects.filter(computer_name=comp).first().mac_address}): {err}" for comp, err in failed_computers])
+            return HttpResponse(f"Some shutdown commands failed:\n{error_messages}", status=500)
+        
+        return HttpResponse("Shutdown commands sent successfully.")
+    
+    return render(request, 'server_app/shutdown_computers.html', {'computers': StudentMAC.objects.values_list('computer_name', flat=True)})

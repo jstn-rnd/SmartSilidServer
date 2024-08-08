@@ -1,25 +1,14 @@
 from django.db import models
 
-
-class UserLogs(models.Model): 
+class UserLogs(models.Model):
     id = models.AutoField(primary_key=True)
-    userName = models.CharField(default = " ", max_length=255)
+    userName = models.CharField(default=" ", max_length=255)
     dateTime = models.DateTimeField()
 
-class ComputerLogs(models.Model): 
+class ComputerLogs(models.Model):
     id = models.AutoField(primary_key=True)
-    computerName = models.CharField(max_length = 255)
+    computerName = models.CharField(max_length=255)
     dateTime = models.DateTimeField()
-
-
-
-
-
-
-
-
-
-   
 
 class Test(models.Model):
     RFID = models.CharField(max_length=30, unique=True)
@@ -27,8 +16,6 @@ class Test(models.Model):
 
 class MacAddress(models.Model):
     mac_address = models.CharField(max_length=50)
-
-
 
 class Whitelist(models.Model):
     url = models.URLField(unique=True)
@@ -41,3 +28,11 @@ class Blacklist(models.Model):
 
     def __str__(self):
         return self.url
+
+class StudentMAC(models.Model):
+    id = models.AutoField(primary_key=True)
+    computer_name = models.CharField(max_length=255)
+    mac_address = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.computer_name
