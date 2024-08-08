@@ -1,95 +1,92 @@
 import win32com.client
 import pythoncom
+import logging
 from django.shortcuts import render, redirect
 from .models import Whitelist, Blacklist
-from .forms import WhitelistForm, BlacklistForm
+
+# Set up logging
+logging.basicConfig(filename='gpo_update.log', level=logging.DEBUG)
 
 def update_gpo():
-    pythoncom.CoInitialize()
+    """
+    Updates the Group Policy Object (GPO) with the current blacklist URLs.
+    
+    Handles initialization and cleanup of COM for thread safety.
+
+    Raises an exception if any error occurs during the update process.
+    """
     try:
-        gpm = win32com.client.Dispatch("GPMgmt.GPM")
-        gpo_guid = "FC6FB68D-5D14-4BC1-8BF0-43018F119787"  # Replace with your GPO GUID
-        gpo = gpm.GetGPO(gpo_guid)
-        gpo_section = gpo.GetSection(2)  # 2 for User Configuration
+        pythoncom.CoInitialize()  # Initialize COM for thread safety
 
-        gpo_section.DeleteAll()
+        # Connect to the GPO management COM object
+        gpo_management = win32com.client.Dispatch("SomeOther.GPOManagement")  # Replace with correct COM object
 
-        whitelist = Whitelist.objects.values_list('url', flat=True)
+        # Retrieve the specified GPO by its GUID
+        gpo_guid = "53582B9C-5D78-40F2-8B14-223EECEAD27B"  # Replace with your GPO GUID
+        gpo = gpo_management.GetGPO(gpo_guid)  # Ensure this method exists or use the correct method
+        
+        # Access the policy settings (modify as needed based on the actual COM object's API)
+        policy = gpo.GetSettings()
+        edge_policy = policy.AdministrativeTemplates.MicrosoftEdge
+
+        # Fetch current blacklist data
         blacklist = Blacklist.objects.values_list('url', flat=True)
 
-        for url in whitelist:
-            gpo_section.SetRegistryValue(
-                "Software\\Policies\\Google\\Chrome\\URLWhitelist",
-                url,
-                "1",
-                "REG_DWORD"
-            )
-            gpo_section.SetRegistryValue(
-                "Software\\Policies\\Microsoft\\Edge\\URLAllowlist",
-                url,
-                "1",
-                "REG_DWORD"
-            )
+        # Update the policy to block URLs
+        edge_policy.BlockAccessToListOfURLs = blacklist
+        
+        # Save the changes
+        gpo.Save()
 
-        for url in blacklist:
-            gpo_section.SetRegistryValue(
-                "Software\\Policies\\Google\\Chrome\\URLBlacklist",
-                url,
-                "1",
-                "REG_DWORD"
-            )
-            gpo_section.SetRegistryValue(
-                "Software\\Policies\\Microsoft\\Edge\\URLBlocklist",
-                url,
-                "1",
-                "REG_DWORD"
-            )
-
-        gpo_section.Save(True)
-        print("GPO updated successfully with the latest whitelist and blacklist URLs.")
+        print("GPO updated successfully.")
 
     except Exception as e:
-        print(f"An error occurred: {e}")
+        logging.error(f"An error occurred while updating GPO: {e}", exc_info=True)
+        raise Exception(f"An error occurred while updating GPO: {e}")
 
     finally:
-        pythoncom.CoUninitialize()
+        pythoncom.CoUninitialize()  # Cleanup COM
 
-def manage_urls(request):
+def whitelist_view(request):
+    """
+    Handles adding and removing URLs from the whitelist.
+
+    Updates the GPO with the modified whitelist after each change.
+    """
     if request.method == 'POST':
-        if 'whitelist_url' in request.POST:
-            whitelist_form = WhitelistForm(request.POST)
-            if whitelist_form.is_valid():
-                whitelist_form.save()
+        if 'add' in request.POST:
+            url = request.POST.get('url')
+            if url:
+                Whitelist.objects.get_or_create(url=url)
                 update_gpo()
-                return redirect('manage_urls')
-        elif 'blacklist_url' in request.POST:
-            blacklist_form = BlacklistForm(request.POST)
-            if blacklist_form.is_valid():
-                blacklist_form.save()
+        elif 'remove' in request.POST:
+            url = request.POST.get('url')
+            if url:
+                Whitelist.objects.filter(url=url).delete()
                 update_gpo()
-                return redirect('manage_urls')
-    else:
-        whitelist_form = WhitelistForm()
-        blacklist_form = BlacklistForm()
+        return redirect('whitelist')
 
-    whitelisted_urls = Whitelist.objects.all()
-    blacklisted_urls = Blacklist.objects.all()
+    whitelist = Whitelist.objects.all()
+    return render(request, 'server_app/whitelist.html', {'whitelist': whitelist})
 
-    return render(request, 'server_app/manage_urls.html', {
-        'whitelist_form': whitelist_form,
-        'blacklist_form': blacklist_form,
-        'whitelisted_urls': whitelisted_urls,
-        'blacklisted_urls': blacklisted_urls,
-    })
+def blacklist_view(request):
+    """
+    Handles adding and removing URLs from the blacklist.
 
-def remove_whitelist_url(request, url_id):
-    url = Whitelist.objects.get(id=url_id)
-    url.delete()
-    update_gpo()
-    return redirect('manage_urls')
+    Updates the GPO with the modified blacklist after each change.
+    """
+    if request.method == 'POST':
+        if 'add' in request.POST:
+            url = request.POST.get('url')
+            if url:
+                Blacklist.objects.get_or_create(url=url)
+                update_gpo()
+        elif 'remove' in request.POST:
+            url = request.POST.get('url')
+            if url:
+                Blacklist.objects.filter(url=url).delete()
+                update_gpo()
+        return redirect('blacklist')
 
-def remove_blacklist_url(request, url_id):
-    url = Blacklist.objects.get(id=url_id)
-    url.delete()
-    update_gpo()
-    return redirect('manage_urls')
+    blacklist = Blacklist.objects.all()
+    return render(request, 'server_app/blacklist.html', {'blacklist': blacklist})

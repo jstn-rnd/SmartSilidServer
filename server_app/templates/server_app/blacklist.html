@@ -1,0 +1,32 @@
+<!-- server_app/templates/blacklist.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Blacklist URLs</title>
+</head>
+<body>
+    <h1>Manage Blacklist</h1>
+    <form method="post">
+        {% csrf_token %}
+        <input type="text" name="url" placeholder="Enter URL to add" required>
+        <button type="submit" name="add">Add to Blacklist</button>
+    </form>
+
+    <h2>Current Blacklist</h2>
+    <ul>
+        {% for item in blacklist %}
+        <li>
+            {{ item.url }}
+            <form method="post" style="display:inline;">
+                {% csrf_token %}
+                <input type="hidden" name="url" value="{{ item.url }}">
+                <button type="submit" name="remove">Remove from Blacklist</button>
+            </form>
+        </li>
+        {% empty %}
+        <li>No URLs in the blacklist.</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

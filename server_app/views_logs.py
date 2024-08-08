@@ -1,11 +1,14 @@
-from .models import UserLogs, ComputerLogs
+from .models import UserLog, ComputerLogs, User
 from django.http import HttpResponse
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
-
+@api_view(['POST'])
 def add_user_logs(request): 
     username = request.POST["username"]
     dateTime = request.POST["dateTime"]
-    userLog = UserLogs(userName = username, dateTime = dateTime)
+    user = User.objects.filter(username = username).first()
+    userLog = UserLog(user = user, dateTime = dateTime)
     userLog.save()
     
     return HttpResponse("okay")

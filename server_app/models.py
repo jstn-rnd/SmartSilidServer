@@ -1,9 +1,14 @@
 from django.db import models
+from django.contrib.auth.models import AbstractUser
 
+class User(AbstractUser):
+    middle_initial = models.CharField(default=" ", max_length=255)
+    type = models.CharField(default=" ", max_length=255)
+    section = models.CharField(default=" ", max_length=255)
 
-class UserLogs(models.Model): 
+class UserLog(models.Model): 
     id = models.AutoField(primary_key=True)
-    userName = models.CharField(default = " ", max_length=255)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='UserLogs')
     dateTime = models.DateTimeField()
 
 class ComputerLogs(models.Model): 
