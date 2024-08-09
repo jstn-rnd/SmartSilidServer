@@ -1,8 +1,10 @@
 from django.urls import path
+from django.contrib import admin
 from . import views 
 from django.urls import path
-from . import views, views_logs, views_users, views_blocked
+from . import views, views_logs, views_users, views_blocked, views_wol
 from .views import view_records, update_approve_status
+from .views_wol import select_and_wake_computers, shutdown_computers 
 
 urlpatterns = [
     path("", views.index, name = "index"),
@@ -24,6 +26,9 @@ urlpatterns = [
 
     path('whitelist/', views_blocked.whitelist_view, name='whitelist'),
     path('blacklist/', views_blocked.blacklist_view, name='blacklist'),
+
+    path('select_and_wake_computers', views_wol.select_and_wake_computers, name='select_and_wake_computers'),
+    path('shutdown_computers', views_wol.shutdown_computers, name='shutdown_computers'),
 
 ]
     
