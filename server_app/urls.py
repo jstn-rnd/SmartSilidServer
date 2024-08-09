@@ -18,8 +18,6 @@ urlpatterns = [
     path('add_computer_logs', views_logs.add_computer_logs, name = "add_computer_logs"),
     
     
-    
-    
     path('check_rfid/', views.check_rfid, name='check_rfid'),
     path('view_records/', views.view_records, name='view_records'),
     path('update_approve_status/', update_approve_status, name='update_approve_status'),

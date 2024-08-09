@@ -5,8 +5,6 @@ from django.http import HttpResponse
 from .settings import get_ad_connection
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-import pythoncom
-from pyad.pyadexceptions import comException
 from .models import User
 from django.contrib.auth import authenticate, login
 
@@ -38,8 +36,8 @@ def create_user(request):
             
             optional_attributes={
                 "givenName": first_name,  
-                "sn": last_name,          # Last name
-                "initials": middle_initial  # Middle initial
+                "sn": last_name,          
+                "initials": middle_initial  
                 }
             
             container_object = pyad.adcontainer.ADContainer.from_dn(f"OU={OU},{AD_BASE_DN}")
