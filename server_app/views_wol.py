@@ -15,7 +15,7 @@ def get_ip_from_mac(mac_address):
         arp_table = result.stdout
         
         # Normalize the MAC address to match the format in the ARP table
-        normalized_mac = mac_address.replace('-', ':').lower()
+        normalized_mac = normalize_mac(mac_address)
         
         # Log ARP table for debugging
         print("ARP Table:")
@@ -23,7 +23,7 @@ def get_ip_from_mac(mac_address):
         
         for line in arp_table.splitlines():
             parts = line.split()
-            if len(parts) >= 3 and parts[1].lower() == normalized_mac:
+            if len(parts) >= 3 and normalize_mac(parts[1]) == normalized_mac:
                 ip_address = parts[0]
                 print(f"Found IP address {ip_address} for MAC address {mac_address}")
                 return ip_address
@@ -37,8 +37,8 @@ def select_and_wake_computers(request):
     if request.method == 'POST':
         selected_computers = request.POST.getlist('computers')
         
-        if len(selected_computers) < 2:
-            return HttpResponse("Please select at least 2 computers.", status=400)
+        if len(selected_computers) < 1:
+            return HttpResponse("Please select at least 1 computer.", status=400)
         
         try:
             for computer in selected_computers:
@@ -66,9 +66,10 @@ def shutdown_computers(request):
                 failed_computers.append((computer, "MAC address not found"))
                 continue
             
-            ip_address = get_ip_from_mac(student_mac.mac_address)
+            original_mac_address = student_mac.mac_address
+            ip_address = get_ip_from_mac(original_mac_address)
             if not ip_address:
-                failed_computers.append((computer, f"IP address not found for MAC address {student_mac.mac_address}"))
+                failed_computers.append((computer, f"IP address not found for MAC address {original_mac_address}"))
                 continue
             
             try:
