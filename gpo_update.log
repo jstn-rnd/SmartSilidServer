@@ -836,3 +836,5 @@ ERROR:django.request:Internal Server Error: /shutdown_computers
 ERROR:django.request:Internal Server Error: /shutdown_computers
 ERROR:django.request:Internal Server Error: /shutdown_computers
 ERROR:django.request:Internal Server Error: /shutdown_computers
+WARNING:django.request:Not Found: /favicon.ico
+INFO:django.utils.autoreload:C:\Users\ADMINISTRATOR2\SmartSilidServer\server_app\admin.py changed, reloading.
