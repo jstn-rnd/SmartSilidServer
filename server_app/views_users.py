@@ -12,27 +12,30 @@ from django.contrib.auth import authenticate, login
 def create_user_page(request): 
     return render(request, 'server_app/create_user.html')
 
+#OU Creation 
+# Hindi pa naayos yung type at section
 @api_view(['POST'])
 def create_user(request):
     if get_ad_connection():
         try:
             AD_BASE_DN = "DC=justine-server,DC=com"
-            username = request.data.get('username', None)
+            #username = request.data.get('username', None)
             password = request.data.get('password')
             first_name = request.data.get('first_name')
             last_name = request.data.get('last_name')
             middle_initial = request.data.get("middle_initial", '')
-            type = request.data.get("type")
+            type = request.data.get("type", None)
             section = request.data.get("section", None)
             OU = None
 
+            print(first_name + middle_initial + last_name + password)
             if type == "Faculty" or type == "Admin": 
                 OU = type 
             else : 
                 OU = section
 
-            if username == None : 
-                username = first_name + "." + last_name + "." + middle_initial
+            #if username == None : 
+            username = first_name + "." + last_name + "." + middle_initial
             
             optional_attributes={
                 "givenName": first_name,  
@@ -40,7 +43,7 @@ def create_user(request):
                 "initials": middle_initial  
                 }
             
-            container_object = pyad.adcontainer.ADContainer.from_dn(f"OU={OU},{AD_BASE_DN}")
+            container_object = pyad.adcontainer.ADContainer.from_dn(f"OU=Student,{AD_BASE_DN}")
             new_user = pyad.aduser.ADUser.create(
                 username, 
                 container_object, 
@@ -51,13 +54,13 @@ def create_user(request):
             if new_user : 
                 user = User(
                     username = username,
-                    password = password,
                     first_name = first_name,
                     last_name = last_name, 
                     middle_initial = middle_initial,
-                    type = type,
-                    section = section
+                    type = "Student",
+                    section = "None"
                 )
+                user.set_password(password)
                 user.save()
 
             return Response({"status_message" : "User succesfully created"})
@@ -92,14 +95,17 @@ def read_user(request):
     else:
         return {"error": "Failed to connect to Active Directory"}
 
+#admin shit 
 @api_view(['POST'])
 def auth_user(request):
     username = request.data.get("username")
     password = request.data.get("password")
+    print(username + password)
 
     user = authenticate(request, username=username, password=password)
 
     if user is not None:
+        print("yehey")
         return Response({
             "status": "True",
             "status_message": "User successfully authenticated"
