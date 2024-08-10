@@ -834,3 +834,5 @@ ERROR:django.request:Internal Server Error: /shutdown_computers
 ERROR:django.request:Internal Server Error: /shutdown_computers
 ERROR:django.request:Internal Server Error: /shutdown_computers
 ERROR:django.request:Internal Server Error: /shutdown_computers
+ERROR:django.request:Internal Server Error: /shutdown_computers
+ERROR:django.request:Internal Server Error: /shutdown_computers
