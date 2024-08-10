@@ -1,9 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
-class UserLogs(models.Model):
-    id = models.AutoField(primary_key=True)
-    userName = models.CharField(default=" ", max_length=255)
+
 class User(AbstractUser):
     middle_initial = models.CharField(default=" ", max_length=255)
     type = models.CharField(default=" ", max_length=255)
@@ -42,8 +40,6 @@ class StudentMAC(models.Model):
     id = models.AutoField(primary_key=True)
     computer_name = models.CharField(max_length=255)
     mac_address = models.CharField(max_length=50)
-
-    
 
     def __str__(self):
         return self.computer_name
