@@ -23,6 +23,7 @@ urlpatterns = [
     path('check_rfid/', views.check_rfid, name='check_rfid'),
     path('view_records/', views.view_records, name='view_records'),
     path('update_approve_status/', update_approve_status, name='update_approve_status'),
+    path('manage_schedules/', views.manage_schedules, name='manage_schedules'),
 
     path('whitelist/', views_blocked.whitelist_view, name='whitelist'),
     path('blacklist/', views_blocked.blacklist_view, name='blacklist'),
