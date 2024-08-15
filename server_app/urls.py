@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views, views_logs, views_users, views_blocked, views_wol
+from . import views, views_logs, views_users, views_blocked, views_wol, views_stream
 
 urlpatterns = [
     path("", views.index, name="index"),
@@ -23,5 +23,8 @@ urlpatterns = [
     path('select_and_wake_computers', views_wol.select_and_wake_computers, name='select_and_wake_computers'),
     path('shutdown_computers', views_wol.shutdown_computers, name='shutdown_computers'),
 
-   
+  
+    
+    path('start-stream/', views_stream.StartStreamingView.as_view(), name='start_stream'),
+    path('stop-stream/', views_stream.StopStreamingView.as_view(), name='stop_stream'),
 ]

@@ -8,7 +8,7 @@ from pyad import *
 AD_SERVER = "SERVER.justine-server.com"
 AD_USER = "ewan"
 AD_PASSWORD = "Nitrosense55"
-
+SITE_HOST = '192.168.10.119'
 
 def get_ad_connection():
     try:

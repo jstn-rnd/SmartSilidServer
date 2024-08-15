@@ -40,7 +40,6 @@ class StudentMAC(models.Model):
     id = models.AutoField(primary_key=True)
     computer_name = models.CharField(max_length=255)
     mac_address = models.CharField(max_length=50)
-    # ip_address = models.CharField(max_length=255)
 
     def __str__(self):
         return self.computer_name

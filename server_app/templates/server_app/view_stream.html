@@ -1,0 +1,15 @@
+<!-- templates/stream.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Stream</title>
+</head>
+<body>
+    <h1>Streaming...</h1>
+    <video id="video" autoplay></video>
+    <script>
+        const video = document.getElementById('video');
+        video.src = "http://{{ site_host }}:{{ port }}/view_stream/";
+    </script>
+</body>
+</html>

@@ -1743,3 +1743,246 @@ WARNING:django.request:Not Found: /sharescreen
 WARNING:django.request:Not Found: /sharescreen
 WARNING:django.request:Not Found: /sharescreen
 WARNING:django.request:Method Not Allowed: /add_user_logs
+INFO:django.utils.autoreload:C:\Users\ADMINISTRATOR2\SmartSilidServer\server_app\views_stream.py changed, reloading.
+INFO:django.utils.autoreload:C:\Users\ADMINISTRATOR2\SmartSilidServer\server_app\views_stream.py changed, reloading.
+INFO:django.utils.autoreload:C:\Users\ADMINISTRATOR2\SmartSilidServer\server_app\views_stream.py changed, reloading.
+INFO:django.utils.autoreload:C:\Users\ADMINISTRATOR2\SmartSilidServer\server_app\urls.py changed, reloading.
+WARNING:django.request:Not Found: /favicon.ico
+ERROR:django.request:Internal Server Error: /sharescreen
+Traceback (most recent call last):
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMINISTRATOR2\SmartSilidServer\server_app\views_stream.py", line 27, in screen_sharing_view
+    ip, port = start_screen_sharing()
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMINISTRATOR2\SmartSilidServer\server_app\views_stream.py", line 16, in start_screen_sharing
+    server = StreamingServer(local_ip, port)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\vidstream\streaming.py", line 89, in __init__
+    self.__init_socket()
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\vidstream\streaming.py", line 95, in __init_socket
+    self.__server_socket.bind((self.__host, self.__port))
+OSError: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
+ERROR:django.request:Internal Server Error: /sharescreen
+Traceback (most recent call last):
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMINISTRATOR2\SmartSilidServer\server_app\views_stream.py", line 27, in screen_sharing_view
+    ip, port = start_screen_sharing()
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMINISTRATOR2\SmartSilidServer\server_app\views_stream.py", line 16, in start_screen_sharing
+    server = StreamingServer(local_ip, port)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\vidstream\streaming.py", line 89, in __init__
+    self.__init_socket()
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\vidstream\streaming.py", line 95, in __init_socket
+    self.__server_socket.bind((self.__host, self.__port))
+OSError: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
+ERROR:django.request:Internal Server Error: /sharescreen
+Traceback (most recent call last):
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMINISTRATOR2\SmartSilidServer\server_app\views_stream.py", line 27, in screen_sharing_view
+    ip, port = start_screen_sharing()
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMINISTRATOR2\SmartSilidServer\server_app\views_stream.py", line 16, in start_screen_sharing
+    server = StreamingServer(local_ip, port)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\vidstream\streaming.py", line 89, in __init__
+    self.__init_socket()
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\vidstream\streaming.py", line 95, in __init_socket
+    self.__server_socket.bind((self.__host, self.__port))
+OSError: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
+ERROR:django.request:Internal Server Error: /sharescreen
+Traceback (most recent call last):
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMINISTRATOR2\SmartSilidServer\server_app\views_stream.py", line 27, in screen_sharing_view
+    ip, port = start_screen_sharing()
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMINISTRATOR2\SmartSilidServer\server_app\views_stream.py", line 16, in start_screen_sharing
+    server = StreamingServer(local_ip, port)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\vidstream\streaming.py", line 89, in __init__
+    self.__init_socket()
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\vidstream\streaming.py", line 95, in __init_socket
+    self.__server_socket.bind((self.__host, self.__port))
+OSError: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
+ERROR:django.request:Internal Server Error: /sharescreen
+Traceback (most recent call last):
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMINISTRATOR2\SmartSilidServer\server_app\views_stream.py", line 27, in screen_sharing_view
+    ip, port = start_screen_sharing()
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMINISTRATOR2\SmartSilidServer\server_app\views_stream.py", line 16, in start_screen_sharing
+    server = StreamingServer(local_ip, port)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\vidstream\streaming.py", line 89, in __init__
+    self.__init_socket()
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\vidstream\streaming.py", line 95, in __init_socket
+    self.__server_socket.bind((self.__host, self.__port))
+OSError: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
+ERROR:django.request:Internal Server Error: /sharescreen
+Traceback (most recent call last):
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMINISTRATOR2\SmartSilidServer\server_app\views_stream.py", line 27, in screen_sharing_view
+    ip, port = start_screen_sharing()
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMINISTRATOR2\SmartSilidServer\server_app\views_stream.py", line 16, in start_screen_sharing
+    server = StreamingServer(local_ip, port)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\vidstream\streaming.py", line 89, in __init__
+    self.__init_socket()
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\vidstream\streaming.py", line 95, in __init_socket
+    self.__server_socket.bind((self.__host, self.__port))
+OSError: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
+INFO:django.utils.autoreload:C:\Users\ADMINISTRATOR2\SmartSilidServer\server_app\views_stream.py changed, reloading.
+INFO:django.utils.autoreload:C:\Users\ADMINISTRATOR2\SmartSilidServer\server_app\views_stream.py changed, reloading.
+INFO:django.utils.autoreload:C:\Users\ADMINISTRATOR2\SmartSilidServer\server_app\views_stream.py changed, reloading.
+INFO:django.utils.autoreload:C:\Users\ADMINISTRATOR2\SmartSilidServer\server_app\views_stream.py changed, reloading.
+INFO:django.utils.autoreload:C:\Users\ADMINISTRATOR2\SmartSilidServer\server_app\views_stream.py changed, reloading.
+INFO:django.utils.autoreload:C:\Users\ADMINISTRATOR2\SmartSilidServer\server_app\urls.py changed, reloading.
+INFO:django.utils.autoreload:C:\Users\ADMINISTRATOR2\SmartSilidServer\server_app\urls.py changed, reloading.
+INFO:django.utils.autoreload:C:\Users\ADMINISTRATOR2\SmartSilidServer\server_app\views_stream.py changed, reloading.
+INFO:django.utils.autoreload:C:\Users\ADMINISTRATOR2\SmartSilidServer\server_app\urls.py changed, reloading.
+INFO:django.utils.autoreload:C:\Users\ADMINISTRATOR2\SmartSilidServer\server_app\urls.py changed, reloading.
+WARNING:django.request:Not Found: /sharescreen/
+WARNING:django.request:Not Found: /sharescreen/
+WARNING:django.request:Not Found: /sharescreen/
+WARNING:django.request:Not Found: /sharescreen/
+WARNING:django.request:Not Found: /sharescreen/
+WARNING:django.request:Not Found: /sharescreen/
+WARNING:django.request:Not Found: /sharescreen/
+WARNING:django.request:Not Found: /sharescreen/
+WARNING:django.request:Not Found: /sharescreen/
+WARNING:django.request:Not Found: /sharescreen/
+WARNING:django.request:Not Found: /sharescreen/
+WARNING:django.request:Not Found: /sharescreen/
+WARNING:django.request:Not Found: /sharescreen/
+WARNING:django.request:Not Found: /sharescreen/
+WARNING:django.request:Not Found: /sharescreen/
+WARNING:django.request:Not Found: /sharescreen/
+WARNING:django.request:Not Found: /sharescreen/
+WARNING:django.request:Not Found: /sharescreen/
+INFO:django.utils.autoreload:C:\Users\ADMINISTRATOR2\SmartSilidServer\server_app\urls.py changed, reloading.
+INFO:django.utils.autoreload:C:\Users\ADMINISTRATOR2\SmartSilidServer\server_app\views_stream.py changed, reloading.
+INFO:django.utils.autoreload:C:\Users\ADMINISTRATOR2\SmartSilidServer\server_app\views_stream.py changed, reloading.
+INFO:django.utils.autoreload:C:\Users\ADMINISTRATOR2\SmartSilidServer\server_app\urls.py changed, reloading.
+WARNING:django.request:Not Found: /sharescreen/
+ERROR:django.request:Internal Server Error: /start-streaming/
+Traceback (most recent call last):
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMINISTRATOR2\SmartSilidServer\server_app\views_stream.py", line 19, in start_streaming
+    server_instance = StreamingServer('0.0.0.0', 8000)  # Bind to all interfaces
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\vidstream\streaming.py", line 89, in __init__
+    self.__init_socket()
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\vidstream\streaming.py", line 95, in __init_socket
+    self.__server_socket.bind((self.__host, self.__port))
+OSError: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
+WARNING:django.request:Not Found: /sharescreen/
+ERROR:django.request:Internal Server Error: /start-streaming/
+Traceback (most recent call last):
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMINISTRATOR2\SmartSilidServer\server_app\views_stream.py", line 19, in start_streaming
+    server_instance = StreamingServer('0.0.0.0', 8000)  # Bind to all interfaces
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\vidstream\streaming.py", line 89, in __init__
+    self.__init_socket()
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\vidstream\streaming.py", line 95, in __init_socket
+    self.__server_socket.bind((self.__host, self.__port))
+OSError: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
+INFO:django.utils.autoreload:C:\Users\ADMINISTRATOR2\SmartSilidServer\server_app\views_stream.py changed, reloading.
+INFO:django.utils.autoreload:C:\Users\ADMINISTRATOR2\SmartSilidServer\server_app\views_stream.py changed, reloading.
+INFO:django.utils.autoreload:C:\Users\ADMINISTRATOR2\SmartSilidServer\server_app\views_stream.py changed, reloading.
+WARNING:django.request:Not Found: /sharescreen/
+ERROR:django.request:Internal Server Error: /start-stream/
+Traceback (most recent call last):
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\views\generic\base.py", line 143, in dispatch
+    return handler(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMINISTRATOR2\SmartSilidServer\server_app\views_stream.py", line 14, in get
+    streaming_url = f"http://{settings.SITE_HOST}:{port}/stream/"
+                              ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\conf\__init__.py", line 83, in __getattr__
+    val = getattr(_wrapped, name)
+          ^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'Settings' object has no attribute 'SITE_HOST'
+WARNING:django.request:Not Found: /favicon.ico
+INFO:django.utils.autoreload:C:\Users\ADMINISTRATOR2\SmartSilidServer\smartsilid_server\settings.py changed, reloading.
+INFO:django.utils.autoreload:C:\Users\ADMINISTRATOR2\SmartSilidServer\smartsilid_server\settings.py changed, reloading.
+WARNING:django.request:Not Found: /stream
+INFO:django.utils.autoreload:C:\Users\ADMINISTRATOR2\SmartSilidServer\smartsilid_server\settings.py changed, reloading.
+ERROR:django.request:Internal Server Error: /start-stream/
+Traceback (most recent call last):
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\views\generic\base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\views\generic\base.py", line 143, in dispatch
+    return handler(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMINISTRATOR2\SmartSilidServer\server_app\views_stream.py", line 12, in get
+    self.server = StreamingServer(host, port)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\vidstream\streaming.py", line 89, in __init__
+    self.__init_socket()
+  File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\vidstream\streaming.py", line 95, in __init_socket
+    self.__server_socket.bind((self.__host, self.__port))
+OSError: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted

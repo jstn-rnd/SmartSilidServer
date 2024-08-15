@@ -96,14 +96,3 @@ def shutdown_computers(request):
     return render(request, 'server_app/shutdown_computers.html', {'computers': StudentMAC.objects.values_list('computer_name', flat=True)})
 
 
-def create_computer(name, mac_address, ip_address): 
-    computer = StudentMAC(computer_name = name, mac_address = mac_address, ip_address = ip_address)
-    computer.save()
-    #exceptions
-
-def change_ip(name, ip_address): 
-    computer = StudentMAC.objects.filter(computer_name = name).filter
-    computer.ip_address = ip_address
-
-    #exceptions
-
