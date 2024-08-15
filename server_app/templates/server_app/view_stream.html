@@ -1,15 +1,10 @@
-<!-- templates/stream.html -->
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Stream</title>
+    <title>Screen Stream</title>
 </head>
 <body>
-    <h1>Streaming...</h1>
-    <video id="video" autoplay></video>
-    <script>
-        const video = document.getElementById('video');
-        video.src = "http://{{ site_host }}:{{ port }}/view_stream/";
-    </script>
+    <h1>Server Screen Stream</h1>
+    <img src="{% url 'stream' %}" alt="Live Stream" />
 </body>
 </html>

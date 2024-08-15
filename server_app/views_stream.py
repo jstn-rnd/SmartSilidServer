@@ -1,21 +1,17 @@
-# server_app/views.py
+from django.http import StreamingHttpResponse
+import cv2
 
-from django.http import JsonResponse
-from django.views import View
-from django.conf import settings
-from vidstream import StreamingServer
+def generate_stream():
+    cap = cv2.VideoCapture('http://192.168.10.119:8000')  # Capture from the VidStream output
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+        _, buffer = cv2.imencode('.jpg', frame)
+        frame_bytes = buffer.tobytes()
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
 
-class StartStreamingView(View):
-    def get(self, request, *args, **kwargs):
-        host = '192.168.10.119'  # Bind to all network interfaces
-        port = 8000  # Or any other available port
-        self.server = StreamingServer(host, port)
-        self.server.start_server()
-        streaming_url = f"http://{settings.SITE_HOST}:{port}/stream/"
-        return JsonResponse({'streaming_url': streaming_url})
-
-class StopStreamingView(View):
-    def get(self, request, *args, **kwargs):
-        if hasattr(self, 'server'):
-            self.server.stop_server()
-        return JsonResponse({'status': 'stopped'})
+def stream_view(request):
+    return StreamingHttpResponse(generate_stream(),
+                                 content_type='multipart/x-mixed-replace; boundary=frame')

@@ -3934,3 +3934,5 @@ INFO:django.utils.autoreload:C:\Users\Administrator\Desktop\smartsilid_server\se
 INFO:django.utils.autoreload:C:\Users\Administrator\Desktop\smartsilid_server\server_app\views.py changed, reloading.
 INFO:django.utils.autoreload:C:\Users\Administrator\Desktop\smartsilid_server\server_app\views.py changed, reloading.
 >>>>>>> 80df7ac60918b66063a9d995e13b7ac1de16e511
+INFO:django.utils.autoreload:C:\Users\ADMINISTRATOR2\SmartSilidServer\server_app\urls.py changed, reloading.
+INFO:django.utils.autoreload:C:\Users\ADMINISTRATOR2\SmartSilidServer\server_app\urls.py changed, reloading.

@@ -1,6 +1,7 @@
 from django.urls import path
 from . import views, views_logs, views_users, views_blocked, views_wol, views_stream
 
+
 urlpatterns = [
     path("", views.index, name="index"),
     path("create_user_page", views_users.create_user_page, name="create_user_page"),
@@ -26,6 +27,8 @@ urlpatterns = [
 
   
     
-    path('start-stream/', views_stream.StartStreamingView.as_view(), name='start_stream'),
-    path('stop-stream/', views_stream.StopStreamingView.as_view(), name='stop_stream'),
+    # path('start-stream/', views_stream.StartStreamingView.as_view(), name='start_stream'),
+    # path('stop-stream/', views_stream.StopStreamingView.as_view(), name='stop_stream'),
+
+    path('stream/', views_stream.stream_view, name = 'stream'),
 ]
