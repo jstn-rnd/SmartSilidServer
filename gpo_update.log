@@ -1986,3 +1986,19 @@ Traceback (most recent call last):
   File "C:\Users\ADMINISTRATOR2\AppData\Local\Programs\Python\Python312\Lib\site-packages\vidstream\streaming.py", line 95, in __init_socket
     self.__server_socket.bind((self.__host, self.__port))
 OSError: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
+WARNING:django.request:Not Found: /stream
+WARNING:django.request:Not Found: /stream
+WARNING:django.request:Not Found: /stream
+WARNING:django.request:Not Found: /stream
+WARNING:django.request:Not Found: /stream
+WARNING:django.request:Not Found: /stream
+WARNING:django.request:Not Found: /stream
+WARNING:django.request:Not Found: /stream
+WARNING:django.request:Not Found: /stream
+WARNING:django.request:Not Found: /stream
+WARNING:django.request:Not Found: /stream
+WARNING:django.request:Not Found: /view_stream
+WARNING:django.request:Not Found: /view_stream
+WARNING:django.request:Not Found: /view_stream
+WARNING:django.request:Not Found: /favicon.ico
+WARNING:django.request:Not Found: /stream
