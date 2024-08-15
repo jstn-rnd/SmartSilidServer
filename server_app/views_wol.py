@@ -2,7 +2,7 @@ import subprocess
 from django.http import HttpResponse
 from wakeonlan import send_magic_packet
 from django.shortcuts import render
-from .models import StudentMAC
+from .models import Computer
 
 def normalize_mac(mac_address):
     """Normalize MAC address to be without hyphens and lowercase."""
@@ -42,7 +42,7 @@ def select_and_wake_computers(request):
         
         try:
             for computer in selected_computers:
-                student_mac = StudentMAC.objects.filter(computer_name=computer).first()
+                student_mac = Computer.objects.filter(computer_name=computer).first()
                 if student_mac:
                     normalized_mac = normalize_mac(student_mac.mac_address)
                     send_magic_packet(normalized_mac)
@@ -50,7 +50,7 @@ def select_and_wake_computers(request):
         except Exception as e:
             return HttpResponse(f"Failed to send magic packets: {str(e)}", status=500)
 
-    return render(request, 'server_app/select_and_wake.html', {'computers': StudentMAC.objects.values_list('computer_name', flat=True)})
+    return render(request, 'server_app/select_and_wake.html', {'computers': Computer.objects.values_list('computer_name', flat=True)})
 
 def shutdown_computers(request):
     if request.method == 'POST':
@@ -61,7 +61,7 @@ def shutdown_computers(request):
         failed_computers = []
         
         for computer in computers:
-            student_mac = StudentMAC.objects.filter(computer_name=computer).first()
+            student_mac = Computer.objects.filter(computer_name=computer).first()
             if not student_mac:
                 failed_computers.append((computer, "MAC address not found"))
                 continue
@@ -88,11 +88,9 @@ def shutdown_computers(request):
                 failed_computers.append((computer, f"Exception occurred: {str(e)}"))
         
         if failed_computers:
-            error_messages = "\n".join([f"Failed to shutdown {comp} (MAC: {StudentMAC.objects.filter(computer_name=comp).first().mac_address}): {err}" for comp, err in failed_computers])
+            error_messages = "\n".join([f"Failed to shutdown {comp} (MAC: {Computer.objects.filter(computer_name=comp).first().mac_address}): {err}" for comp, err in failed_computers])
             return HttpResponse(f"Some shutdown commands failed:\n{error_messages}", status=500)
         
         return HttpResponse("Shutdown commands sent successfully.")
     
-    return render(request, 'server_app/shutdown_computers.html', {'computers': StudentMAC.objects.values_list('computer_name', flat=True)})
-
-
+    return render(request, 'server_app/shutdown_computers.html', {'computers': Computer.objects.values_list('computer_name', flat=True)})

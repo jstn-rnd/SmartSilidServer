@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from server_app.models import UserLog, User
+from server_app.models import UserLog, User, Computer
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -10,26 +10,14 @@ class UserSerializer(serializers.ModelSerializer):
         }
 
 class UserLogSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(write_only=True)  
-
     class Meta:
         model = UserLog
-        fields = ['username', 'dateTime']  
+        fields = ['user', 'computer', 'dateTime']  
 
-    def validate(self, data):
-        username = data.get('username')
-        if not username:
-            raise serializers.ValidationError({"username": "This field is required."})
-        
-        try:
-            user = User.objects.get(username=username)
-            print("Trueeeeeee")
-        except User.DoesNotExist:
-            raise serializers.ValidationError({"username": "User with this username does not exist."})
-        
-        data['user'] = user
-        return data
+class ComputerSerializer(serializers.ModelSerializer): 
 
-    def create(self, validated_data):
-        validated_data.pop('username')
-        return super().create(validated_data)
+    class Meta:
+        model = Computer
+        fields = ['computer_name', 'mac_address']  
+
+#class UserUsernameSerializer()

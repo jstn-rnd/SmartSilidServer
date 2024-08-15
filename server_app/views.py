@@ -1,11 +1,16 @@
+from datetime import timezone
 from django.http import HttpResponse
 from django.shortcuts import HttpResponseRedirect, render
-
+from .models import Schedule, Test, MacAddress
 from django.shortcuts import render, redirect
 
 
 from django.shortcuts import render, redirect
-
+from django.shortcuts import render, redirect
+from .models import Schedule, Test, MacAddress
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
 
 
 def index(request):
@@ -14,10 +19,11 @@ def index(request):
 
 
 
-from django.shortcuts import render, HttpResponse
+from django.shortcuts import render, HttpResponse, get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from .models import Test, MacAddress
+from .models import Test, MacAddress, Schedule
+from .forms import ScheduleForm
 import json
 
 
@@ -88,3 +94,61 @@ def update_approve_status(request):
         except Test.DoesNotExist:
             pass
     return redirect('view_records')
+
+from django.shortcuts import render, redirect
+from django.utils import timezone
+from .models import Schedule, Test
+from .forms import ScheduleForm
+import pytz
+
+def manage_schedules(request):
+    if request.method == 'POST':
+        print("POST request received")
+        schedule_form = ScheduleForm(request.POST)
+        if schedule_form.is_valid():
+            print("Form is valid")
+            schedule = schedule_form.save()
+            print(f"Schedule saved: {schedule}")
+            update_rfids_approval(schedule)  # Call the function to update RFIDs approval
+            print("RFID approval update called")
+            return redirect('manage_schedules')
+        else:
+            print("Form is not valid")
+    else:
+        schedule_form = ScheduleForm()
+
+    schedules = Schedule.objects.all()
+    rfids = Test.objects.values_list('RFID', flat=True)
+    return render(request, 'server_app/manage_schedules.html', {
+        'schedule_form': schedule_form,
+        'schedules': schedules,
+        'rfids': rfids,
+    })
+
+def update_rfids_approval(schedule):
+    local_tz = pytz.timezone('Asia/Manila')
+    local_time = timezone.now().astimezone(local_tz)
+    current_time = local_time.time()
+    current_weekday = local_time.strftime('%a')
+    
+    print(f"Current Manila DateTime: {local_time}, Time: {current_time}, Weekday: {current_weekday}")
+    
+    for rfid in schedule.rfids.all():
+        # Log schedule details
+        print(f"Processing RFID: {rfid.RFID}")
+        print(f"Schedule details: start_time={schedule.start_time}, end_time={schedule.end_time}, weekdays={schedule.weekdays}")
+        
+        # Check if the current time is within the schedule time
+        if (schedule.start_time <= current_time <= schedule.end_time 
+            and current_weekday in schedule.get_weekdays_display()):
+            rfid.approved = 1
+            print(f"RFID {rfid.RFID} approved")
+        else:
+            rfid.approved = 0
+            print(f"RFID {rfid.RFID} not approved")
+        
+        # Save RFID approval status
+        rfid.save()
+        print(f"RFID {rfid.RFID} approval status saved: {rfid.approved}")
+
+    print("RFID approval update called")

@@ -1,0 +1,28 @@
+<!-- view_schedule_details.html -->
+<h2>Schedule Details</h2>
+<p><strong>Subject:</strong> {{ schedule.subject }}</p>
+<p><strong>Start Time:</strong> {{ schedule.start_time }}</p>
+<p><strong>End Time:</strong> {{ schedule.end_time }}</p>
+<p><strong>Weekday:</strong> {{ schedule.get_weekdays_display }}</p>
+
+<h3>RFIDs Associated with This Schedule</h3>
+<table>
+    <thead>
+        <tr>
+            <th>RFID</th>
+            <th>Approval Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for Test in schedule.rfids.all %}
+        <tr>
+            <td>{{ Test.RFID }}</td>
+            <td>{{ Test.get_approved_display }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="2">No RFIDs associated with this schedule.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
