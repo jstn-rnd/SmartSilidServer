@@ -7,6 +7,7 @@ from .serializers import UserLogSerializer
 
 @api_view(['POST'])
 def add_user_logs(request): 
+    #kunin yung computer info, and create update depende sa result
     serializer = UserLogSerializer(data=request.data)
     print(serializer)
     if serializer.is_valid():

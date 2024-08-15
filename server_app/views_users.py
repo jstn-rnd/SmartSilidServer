@@ -148,6 +148,7 @@ def delete_user(request):
     else:
         return HttpResponse("Failed to connect to Active Directory")
     
+    
 def change_attribute_user(request): 
     if get_ad_connection():
         username = request.POST['username']
