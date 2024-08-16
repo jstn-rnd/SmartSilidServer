@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Stream Control</title>
+</head>
+<body>
+    <h1>Stream Control</h1>
+    <a href="/start-stream/">Start Streaming</a>
+    <a href="/stop-stream/">Stop Streaming</a>
+    <br><br>
+    <img id="stream" src="/stream/" alt="Live Stream" style="display: none;" />
+    <script>
+        document.querySelector('a[href="/start-stream/"]').addEventListener('click', function() {
+            document.getElementById('stream').style.display = 'block';
+        });
+        document.querySelector('a[href="/stop-stream/"]').addEventListener('click', function() {
+            document.getElementById('stream').style.display = 'none';
+        });
+    </script>
+</body>
+</html>

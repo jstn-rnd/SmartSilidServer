@@ -1,15 +1,15 @@
-from vidstream import ScreenShareClient
-import threading
+# from vidstream import ScreenShareClient
+# import threading
 
-server_ip = 'your_server_ip'  # Local IP or use 127.0.0.1 if local
+# server_ip = '192.168.10.119'  # Local IP or use 127.0.0.1 if local
 
-sender = ScreenShareClient(server_ip, 9999)
+# sender = ScreenShareClient(server_ip, 8000)
 
-t = threading.Thread(target=sender.start_stream)
-t.start()
+# t = threading.Thread(target=sender.start_stream)
+# t.start()
 
-try:
-    while True:
-        pass
-except KeyboardInterrupt:
-    sender.stop_stream()
+# try:
+#     while True:
+#         pass
+# except KeyboardInterrupt:
+#     sender.stop_stream()
