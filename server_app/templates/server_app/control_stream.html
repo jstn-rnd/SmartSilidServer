@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Stream Controls</title>
+    <script>
+        function startStream() {
+            fetch("{% url 'start_stream' %}")
+                .then(response => {
+                    if (response.ok) {
+                        alert("Stream started.");
+                    } else {
+                        alert("Failed to start stream.");
+                    }
+                });
+        }
+
+        function stopStream() {
+            fetch("{% url 'stop_stream' %}")
+                .then(response => {
+                    if (response.ok) {
+                        alert("Stream stopped.");
+                    } else {
+                        alert("Failed to stop stream.");
+                    }
+                });
+        }
+
+    </script>
+</head>
+<body>
+    <h1>Stream Controls</h1>
+    
+    <button onclick="startStream()">Start Stream</button>
+    <button onclick="stopStream()">Stop Stream</button>
+</body>
+</html>

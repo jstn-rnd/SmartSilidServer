@@ -2,36 +2,34 @@
 <html>
 <head>
     <title>Screen Stream</title>
-</head>
-<body>
-    <h1>Server Screen Stream</h1>
-    <button onclick="startStream()">Start Streaming</button>
-    <button onclick="stopStream()">Stop Streaming</button>
-    <br><br>
-    <img id="stream" src="" alt="Live Stream" style="display:none;" />
-    
     <script>
-        function startStream() {
-            fetch('/start-stream/')
+        function refreshStream() {
+            const streamImg = document.getElementById('stream');
+            if (streamImg) {
+                streamImg.src = streamImg.src.split('?')[0] + '?' + new Date().getTime(); // Force refresh
+            }
+        }
+
+        // Polling function to check if the stream should be refreshed
+        function pollStreamStatus() {
+            fetch("{% url 'stream_status' %}")
                 .then(response => response.json())
                 .then(data => {
-                    if (data.status === 'streaming started') {
-                        document.getElementById('stream').style.display = 'block';
-                        document.getElementById('stream').src = '/stream/';
+                    if (data.active) {
+                        refreshStream();
                     }
                 });
         }
 
-        function stopStream() {
-            fetch('/stop-stream/')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'streaming stopped') {
-                        document.getElementById('stream').style.display = 'none';
-                        document.getElementById('stream').src = '';
-                    }
-                });
-        }
+        // Poll every 5 seconds
+        setInterval(pollStreamStatus, 5000);
     </script>
+</head>
+<body>
+    <h1>Server Screen Stream</h1>
+    
+    <img id="stream" src="{% url 'stream' %}" alt="Live Stream" />
+    
+    <p><a href="{% url 'control' %}">Go to Control Panel</a></p>
 </body>
 </html>

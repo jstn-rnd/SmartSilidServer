@@ -1,6 +1,5 @@
 from django.urls import path
 from . import views, views_logs, views_users, views_blocked, views_wol, views_stream
-from .views_stream import stream_view, start_stream, stop_stream, stream_page
 
 urlpatterns = [
     path("", views.index, name="index"),
@@ -25,14 +24,12 @@ urlpatterns = [
     path('select_and_wake_computers', views_wol.select_and_wake_computers, name='select_and_wake_computers'),
     path('shutdown_computers', views_wol.shutdown_computers, name='shutdown_computers'),
 
-  
-    
-    # path('start-stream/', views_stream.StartStreamingView.as_view(), name='start_stream'),
-    # path('stop-stream/', views_stream.StopStreamingView.as_view(), name='stop_stream'),
+    # Add paths for stream control
+    path('control/', views_stream.control_view, name='control_stream'),  # Control panel
+    path('start-stream/', views_stream.start_stream, name='start_stream'),  # Start streaming
+    path('stop-stream/', views_stream.stop_stream, name='stop_stream'),  # Stop streaming
 
-    # path('stream/', stream_view, name='stream'),
-     path('stream/', stream_view, name='stream'),
-    path('start-stream/', start_stream, name='start_stream'),
-    path('stop-stream/', stop_stream, name='stop_stream'),
-    path('stream-page/', stream_page, name='stream_page'),
+    # Path for streaming view
+    path('stream/', views_stream.stream_view, name='stream'),
+    path('stream-status/', views_stream.stream_status, name='stream_status'),
 ]
