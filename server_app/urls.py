@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views, views_logs, views_users, views_blocked, views_wol, views_stream
+from . import views, views_logs, views_users, views_blocked, views_wol, views_stream, views_monitoring
 
 urlpatterns = [
     path("", views.index, name="index"),
@@ -32,4 +32,11 @@ urlpatterns = [
     # Path for streaming view
     path('stream/', views_stream.stream_view, name='stream'),
     path('stream-status/', views_stream.stream_status, name='stream_status'),
+
+    # Monitoring URLs
+   path('upload_screen/', views_monitoring.upload_screen, name='upload_screen'),
+    path('view_screen/<str:client_id>/', views_monitoring.view_screen, name='view_screen'),
+
+    # New path for client screens
+    path('client_screens/', views_monitoring.client_screens_view, name='client_screens'),
 ]
