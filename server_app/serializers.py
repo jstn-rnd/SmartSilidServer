@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from server_app.models import UserLog, User, Computer
+from server_app.models import UserLog, User, Computer, Section
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -19,5 +19,11 @@ class ComputerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Computer
         fields = ['computer_name', 'mac_address']  
+
+class SectionSerializer(serializers.ModelSerializer): 
+
+    class Meta : 
+        model : Section
+        fields = ['name']
 
 #class UserUsernameSerializer()

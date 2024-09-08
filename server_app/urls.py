@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views, views_logs, views_users, views_blocked, views_wol, views_stream, views_monitoring
+from . import views_section
 
 urlpatterns = [
     path("", views.index, name="index"),
@@ -39,4 +40,7 @@ urlpatterns = [
 
     # New path for client screens
     path('client_screens/', views_monitoring.client_screens_view, name='client_screens'),
+
+    #Sections 
+    path('add_section', views_section.add_section, name = "add_section")
 ]

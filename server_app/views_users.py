@@ -5,8 +5,9 @@ from django.http import HttpResponse
 from .settings import get_ad_connection
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from .models import User
+from .models import User, Section
 from django.contrib.auth import authenticate, login
+from .configurations import AD_BASE_DN
 
 
 def create_user_page(request): 
@@ -14,56 +15,68 @@ def create_user_page(request):
 
 #OU Creation 
 # Hindi pa naayos yung type at section
+#Lagyan ng admin rights yung mga nasa faculty
 @api_view(['POST'])
 def create_user(request):
     if get_ad_connection():
         try:
-            AD_BASE_DN = "DC=justine-server,DC=com"
-            #username = request.data.get('username', None)
+            username = request.data.get('username', None)
             password = request.data.get('password')
             first_name = request.data.get('first_name')
             last_name = request.data.get('last_name')
             middle_initial = request.data.get("middle_initial", '')
             type = request.data.get("type", None)
             section = request.data.get("section", None)
+            container_object = " "
             OU = None
 
-            print(first_name + middle_initial + last_name + password)
-            if type == "Faculty" or type == "Admin": 
-                OU = type 
-            else : 
-                OU = section
-
-            #if username == None : 
-            username = first_name + "." + last_name + "." + middle_initial
-            
             optional_attributes={
                 "givenName": first_name,  
                 "sn": last_name,          
                 "initials": middle_initial  
                 }
-            
-            container_object = pyad.adcontainer.ADContainer.from_dn(f"OU=Student,{AD_BASE_DN}")
-            new_user = pyad.aduser.ADUser.create(
-                username, 
-                container_object, 
-                password=password,
-                optional_attributes=optional_attributes
-                )
-            
-            if new_user : 
-                user = User(
-                    username = username,
-                    first_name = first_name,
-                    last_name = last_name, 
-                    middle_initial = middle_initial,
-                    type = "Student",
-                    section = "None"
-                )
-                user.set_password(password)
-                user.save()
 
-            return Response({"status_message" : "User succesfully created"})
+            if username == None : 
+                username = first_name + "." + last_name + "." + middle_initial
+            
+            print(first_name + middle_initial + last_name + password)
+            if type == "Faculty" or type == "Admin": 
+                container_object = pyad.adcontainer.ADContainer.from_dn(f"OU=Faculty,OU=SmartSilid-Users,{AD_BASE_DN}")
+                
+            elif type == "Student": 
+                section_object = Section.objects.filter(name = section)
+
+                if section_object : 
+                    container_object = pyad.adcontainer.ADContainer.from_dn(f"OU={section},OU=Student,OU=SmartSilid-Users,{AD_BASE_DN}")
+                    new_user = pyad.aduser.ADUser.create(
+                        username, 
+                        container_object, 
+                        password=password,
+                        optional_attributes=optional_attributes
+                        )
+                    
+                    if new_user : 
+                        user = User(
+                            username = username,
+                            first_name = first_name,
+                            last_name = last_name, 
+                            middle_initial = middle_initial,
+                            type = "Student",
+                            section = "None"
+                        )
+                        user.set_password(password)
+                        user.save()
+
+                    return Response({"status_message" : "User succesfully created"})
+                else : 
+                    return Response({"status_message" : "Section does not exist"})
+            
+            
+            
+            
+            
+            
+            
         except Exception as e:
             print(f"Failed to create user: {str(e)}")
             return Response({"status_message" : f"Failed to create user:3 {str(e)}"})

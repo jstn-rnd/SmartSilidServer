@@ -1,0 +1,1 @@
+AD_BASE_DN = "DC=smartsilid,DC=com"

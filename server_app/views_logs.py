@@ -1,4 +1,4 @@
-from .models import UserLog, ComputerLogs, User, Computer
+from .models import User, Computer
 from django.http import HttpResponse
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -7,10 +7,7 @@ from .serializers import UserLogSerializer, ComputerSerializer
 
 @api_view(['POST'])
 def add_user_logs(request): 
-    username = request.data.get("username")
-    user = User.objects.filter(username = username).first()
-    print(user.first_name)
-
+    username = request.data.get("userName")
     computer_name = request.data.get("computerName")
     mac_address = request.data.get("macAddress")
 
@@ -18,12 +15,15 @@ def add_user_logs(request):
     mac_found = Computer.objects.filter(mac_address = mac_address).first()
     computer = " "
 
+    print(f"1 : {mac_address}")
+
     if not name_mac_match: 
         if mac_found: 
-            mac_found.mac_address = mac_address
+            mac_found.computer_name = mac_address
             mac_found.save()
             computer = mac_found
         else :
+            print(f"2 : {mac_address}")
             computer_data = {
                 'computer_name' : computer_name, 
                 'mac_address' : mac_address
@@ -34,7 +34,11 @@ def add_user_logs(request):
                 computer = Computer.objects.filter(computer_name = computer_name).first()
 
     else : 
+        print(f"3 : {mac_address}")
         computer = name_mac_match
+
+    
+    user = User.objects.filter(username = username).first()
     
     data = {
         "user" : user.id, 
