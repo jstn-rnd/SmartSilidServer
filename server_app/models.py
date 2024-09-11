@@ -9,7 +9,7 @@ class Section(models.Model):
 class User(AbstractUser):
     middle_initial = models.CharField(default=" ", max_length=255)
     type = models.CharField(default=" ", max_length=255)
-    section = models.CharField(default=" ", max_length=255)
+    section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name='Users')
 
 class Computer(models.Model):
     id = models.AutoField(primary_key=True)
@@ -23,7 +23,8 @@ class UserLog(models.Model):
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='UserLogs')
     computer = models.ForeignKey(Computer, on_delete=models.CASCADE, related_name='UserLogs', default = 0)
-    dateTime = models.DateTimeField()
+    logonDateTime = models.DateTimeField(null = True, blank = True)
+    logoffDateTime = models.DateTimeField(null = True, blank = True)
 
 class Test(models.Model):
     RFID = models.CharField(max_length=30, unique=True)
@@ -35,7 +36,6 @@ class Test(models.Model):
     
 class MacAddress(models.Model):
     mac_address = models.CharField(max_length=50)
-
 
 
 from django.utils.translation import gettext_lazy as _
@@ -65,15 +65,11 @@ class Schedule(models.Model):
 
 
 
-class Whitelist(models.Model):
+
+
+class BlockedURL(models.Model):
     url = models.URLField(unique=True)
-
-    def __str__(self):
-        return self.url
-
-class Blacklist(models.Model):
-    url = models.URLField(unique=True)
-
+    
     def __str__(self):
         return self.url
 

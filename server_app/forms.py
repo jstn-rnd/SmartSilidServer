@@ -1,18 +1,9 @@
 from django import forms
-from .models import Blacklist
+
 from django import forms
 
-from .models import Whitelist, Blacklist, Schedule
+from .models import Schedule
 
-class WhitelistForm(forms.ModelForm):
-    class Meta:
-        model = Whitelist
-        fields = ['url']
-
-class BlacklistForm(forms.ModelForm):
-    class Meta:
-        model = Blacklist
-        fields = ['url']
 
 class ScheduleForm(forms.ModelForm):
     start_time = forms.TimeField(

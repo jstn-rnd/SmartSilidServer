@@ -39,12 +39,12 @@ def create_user(request):
             if username == None : 
                 username = first_name + "." + last_name + "." + middle_initial
             
-            print(first_name + middle_initial + last_name + password)
+            print(first_name + middle_initial + last_name + password + section)
             if type == "Faculty" or type == "Admin": 
                 container_object = pyad.adcontainer.ADContainer.from_dn(f"OU=Faculty,OU=SmartSilid-Users,{AD_BASE_DN}")
                 
             elif type == "Student": 
-                section_object = Section.objects.filter(name = section)
+                section_object = Section.objects.filter(name = section).first()
 
                 if section_object : 
                     container_object = pyad.adcontainer.ADContainer.from_dn(f"OU={section},OU=Student,OU=SmartSilid-Users,{AD_BASE_DN}")
@@ -62,7 +62,7 @@ def create_user(request):
                             last_name = last_name, 
                             middle_initial = middle_initial,
                             type = "Student",
-                            section = "None"
+                            section = section_object
                         )
                         user.set_password(password)
                         user.save()
@@ -191,3 +191,29 @@ def change_attribute_user(request):
 
     else:
         return {"error": "Failed to connect to Active Directory"}
+    
+@api_view(['GET'])
+def get_all_student(request):
+
+#surname 
+#firstname 
+#middleinitial 
+#section
+    result = []
+    users = User.objects.all()
+
+    for user in users:
+        if user.type == "Student": 
+            info = {
+                "first_name" : user.first_name, 
+                "last_name" : user.last_name, 
+                "middle_initial" : user.middle_initial,
+                "section" : user.section.name
+            }
+            result.append(info)
+    
+    return Response({
+        "status_message" : "User obtained succesfully",
+        "user" : result 
+    })
+            

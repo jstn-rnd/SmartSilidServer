@@ -12,7 +12,7 @@ class UserSerializer(serializers.ModelSerializer):
 class UserLogSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserLog
-        fields = ['user', 'computer', 'dateTime']  
+        fields = ['user', 'computer', 'logonDateTime']  
 
 class ComputerSerializer(serializers.ModelSerializer): 
 
@@ -23,7 +23,7 @@ class ComputerSerializer(serializers.ModelSerializer):
 class SectionSerializer(serializers.ModelSerializer): 
 
     class Meta : 
-        model : Section
+        model = Section
         fields = ['name']
 
 #class UserUsernameSerializer()
