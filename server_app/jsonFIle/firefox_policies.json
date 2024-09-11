@@ -1,0 +1,8 @@
+{
+    "policies": {
+        "URLBlocklist": [
+            "www.facebook.com",
+            "www.youtube.com"
+        ]
+    }
+}

@@ -16,18 +16,37 @@ def run_powershell_script(url_list):
         $gpo = New-GPO -Name $GPOName
     }}
 
-    $gpoRegistryPath = "HKCU\\Software\\Policies\\Microsoft\\Edge\\URLBlocklist"
+    # Microsoft Edge URLBlocklist registry path
+    $edgeRegistryPath = "HKCU\\Software\\Policies\\Microsoft\\Edge\\URLBlocklist"
+    
+    # Google Chrome URLBlocklist registry path
+    $chromeRegistryPath = "HKCU\\Software\\Policies\\Google\\Chrome\\URLBlocklist"
+    
+    # Firefox URLBlocklist registry path (if using ADMX template)
+    $firefoxRegistryPath = "HKCU\\Software\\Policies\\Mozilla\\Firefox\\WebsiteFilter\\Block"
 
-    # Check if registry path exists before removing
-    $keyExists = Get-GPRegistryValue -Name $GPOName -Key $gpoRegistryPath -ErrorAction SilentlyContinue
-    if ($keyExists) {{
-        Remove-GPRegistryValue -Name $GPOName -Key $gpoRegistryPath -ErrorAction SilentlyContinue
+    # Function to clear and add new URLs for a browser
+    function Set-URLBlocklist ($gpoName, $registryPath, $urls) {{
+        # Check if registry path exists before removing
+        $keyExists = Get-GPRegistryValue -Name $gpoName -Key $registryPath -ErrorAction SilentlyContinue
+        if ($keyExists) {{
+            Remove-GPRegistryValue -Name $gpoName -Key $registryPath -ErrorAction SilentlyContinue
+        }}
+
+        # Add new URLs
+        for ($i = 0; $i -lt $urls.Count; $i++) {{
+            Set-GPRegistryValue -Name $gpoName -Key $registryPath -ValueName "$i" -Type String -Value $urls[$i] -ErrorAction SilentlyContinue
+        }}
     }}
 
-    # Add new URLs
-    for ($i = 0; $i -lt $newURLs.Count; $i++) {{
-        Set-GPRegistryValue -Name $GPOName -Key $gpoRegistryPath -ValueName "$i" -Type String -Value $newURLs[$i] -ErrorAction SilentlyContinue
-    }}
+    # Set URL blocklist for Edge
+    Set-URLBlocklist -gpoName $GPOName -registryPath $edgeRegistryPath -urls $newURLs
+    
+    # Set URL blocklist for Chrome
+    Set-URLBlocklist -gpoName $GPOName -registryPath $chromeRegistryPath -urls $newURLs
+
+    # Set URL blocklist for Firefox
+    Set-URLBlocklist -gpoName $GPOName -registryPath $firefoxRegistryPath -urls $newURLs
 
     # Suppress any output
     $null = Write-Host "Policy reset to Not Configured and new URLs added." -ErrorAction SilentlyContinue
