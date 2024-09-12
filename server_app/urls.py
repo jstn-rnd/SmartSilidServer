@@ -9,11 +9,12 @@ urlpatterns = [
     path("read_user/delete_user", views_users.delete_user, name="delete_user"),
     path("read_user/change_attribute_user", views_users.change_attribute_user, name="change_attribute_user"),
     path("auth_user", views_users.auth_user, name="auth_user"),
-    path("get_all_student", views_users.get_all_student, name="get_all_student"),
+    path("get_all_students", views_users.get_all_students, name="get_all_students"),
 
     path('add_user_logon', views_logs.add_user_logon, name="add_user_logon"),
     path('add_user_logoff', views_logs.add_user_logoff, name="add_user_logoff"),
-    
+    path('get_logs', views_logs.get_logs, name = "get_logs"),
+
     path('check_rfid/', views.check_rfid, name='check_rfid'),
     path('view_records/', views.view_records, name='view_records'),
     path('update_approve_status/', views.update_approve_status, name='update_approve_status'),
@@ -21,9 +22,13 @@ urlpatterns = [
 
     path('manage_blocked_urls/', views_blocked.blocked_url_manage, name='manage_blocked_urls'),
    
-
-    path('select_and_wake_computers', views_wol.select_and_wake_computers, name='select_and_wake_computers'),
+    #wol
+    #path('select_and_wake_computers', views_wol.select_and_wake_computers, name='select_and_wake_computers'),
     path('shutdown_computers', views_wol.shutdown_computers, name='shutdown_computers'),
+    path('wake_computers', views_wol.wake_computers, name='wake_computers'),
+
+    #computer
+    path('get_all_computers', views_wol.get_all_computers, name = "get_all_computers"),
 
     # Add paths for stream control
     path('control/', views_stream.control_view, name='control_stream'),  # Control panel
@@ -44,7 +49,9 @@ urlpatterns = [
     #Sections 
     path('add_section', views_section.add_section, name = "add_section"),
     path('delete_section', views_section.delete_section, name = "delete_section"),
-    path('get_all_section', views_section.get_all_section, name = "get_all_section")
+    path('get_all_sections', views_section.get_all_sections, name = "get_all_sections")
     #Input blocking
     #path()
+
+
 ]

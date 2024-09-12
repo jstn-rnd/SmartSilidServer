@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from datetime import datetime
+from datetime import datetime, date
 
 class Section(models.Model): 
     id = models.AutoField(primary_key=True)
@@ -9,7 +9,7 @@ class Section(models.Model):
 class User(AbstractUser):
     middle_initial = models.CharField(default=" ", max_length=255)
     type = models.CharField(default=" ", max_length=255)
-    section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name='Users')
+    section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name='Users', null = True)
 
 class Computer(models.Model):
     id = models.AutoField(primary_key=True)
@@ -23,8 +23,9 @@ class UserLog(models.Model):
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='UserLogs')
     computer = models.ForeignKey(Computer, on_delete=models.CASCADE, related_name='UserLogs', default = 0)
-    logonDateTime = models.DateTimeField(null = True, blank = True)
-    logoffDateTime = models.DateTimeField(null = True, blank = True)
+    date = models.DateField()
+    logonTime = models.TimeField(null = True, blank = True)
+    logoffTime = models.TimeField(null = True, blank = True)
 
 class Test(models.Model):
     RFID = models.CharField(max_length=30, unique=True)

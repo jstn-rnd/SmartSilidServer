@@ -96,7 +96,7 @@ def delete_section(request):
         })
         
 @api_view(['GET'])
-def get_all_section(request):
+def get_all_sections(request):
     sections = Section.objects.all()
     response_json = []
 

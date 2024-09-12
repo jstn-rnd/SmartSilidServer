@@ -193,12 +193,8 @@ def change_attribute_user(request):
         return {"error": "Failed to connect to Active Directory"}
     
 @api_view(['GET'])
-def get_all_student(request):
+def get_all_students(request):
 
-#surname 
-#firstname 
-#middleinitial 
-#section
     result = []
     users = User.objects.all()
 
@@ -214,6 +210,6 @@ def get_all_student(request):
     
     return Response({
         "status_message" : "User obtained succesfully",
-        "user" : result 
+        "students" : result 
     })
             

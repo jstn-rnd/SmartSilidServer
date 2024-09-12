@@ -50,26 +50,7 @@ def run_powershell_script(url_list):
 
     # Suppress any output
     $null = Write-Host "Policy reset to Not Configured and new URLs added." -ErrorAction SilentlyContinue
-
-    $username = "Administrator"
-    $password = "Admin123"
-    $clientComputers = "DESKTOP-HBTUJID"
-
-    $securePassword = ConvertTo-SecureString $password -AsPlainText -Force
-    $credential = New-Object System.Management.Automation.PSCredential ($username, $securePassword)
-
-    try {{
-        $session = New-PSSession -ComputerName $clientComputers -Credential $credential -ErrorAction Stop
-        Invoke-Command -Session $session -ScriptBlock {{
-            gpupdate /force
-        }} -ErrorAction Stop | Out-Null
-    }} catch {{
-        $null = Write-Error "An error occurred: $_" -ErrorAction SilentlyContinue
-    }} finally {{
-        if ($session) {{
-            Remove-PSSession -Session $session
-        }}
-    }}
+    
     '''
     process = subprocess.Popen(["powershell", "-Command", script], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     process.communicate()  # Wait for the script to finish
