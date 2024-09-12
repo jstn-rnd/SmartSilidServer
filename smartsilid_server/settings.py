@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-xg)g%m6e^za11+c9^p3zn3*!d1wq#7=nl#$z9qyemc$c)x#=4b
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.10.118', '127.0.0.1', 'localhost', '192.168.10.119']
+ALLOWED_HOSTS = ['192.168.10.118', '127.0.0.1', 'localhost', '192.168.10.113']
 SITE_HOST = '192.168.10.119'
 # Application definition
 
@@ -149,3 +149,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AD_SERVER = "justine-server.com"
 GPO_GUID = "08C70DD4-D739-4938-B02E-F68144C1522D"
 
+DATA_UPLOAD_MAX_MEMORY_SIZE = 104857600  # 100 MB (adjust as needed)

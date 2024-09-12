@@ -4,32 +4,25 @@
     <title>Screen Stream</title>
     <script>
         function refreshStream() {
-            const streamImg = document.getElementById('stream');
-            if (streamImg) {
-                streamImg.src = streamImg.src.split('?')[0] + '?' + new Date().getTime(); // Force refresh
+            const videoElement = document.getElementById('stream');
+            if (videoElement) {
+                videoElement.src = videoElement.src.split('?')[0] + '?' + new Date().getTime(); // Force refresh
             }
         }
 
-        // Polling function to check if the stream should be refreshed
-        function pollStreamStatus() {
-            fetch("{% url 'stream_status' %}")
-                .then(response => response.json())
-                .then(data => {
-                    if (data.active) {
-                        refreshStream();
-                    }
-                });
-        }
-
-        // Poll every 5 seconds
-        setInterval(pollStreamStatus, 5000);
+        // Poll every 1/60 second for 60 FPS
+        setInterval(refreshStream, 1000 / 120);
     </script>
 </head>
 <body>
     <h1>Server Screen Stream</h1>
     
-    <img id="stream" src="{% url 'stream' %}" alt="Live Stream" />
+    <!-- Use the <video> tag for displaying video streams -->
+    <video id="stream" controls autoplay style="width: 100%; height: auto;">
+        <source src="{% url 'stream_view' %}" type="multipart/x-mixed-replace">
+        Your browser does not support the video tag.
+    </video>
     
-    <p><a href="{% url 'control' %}">Go to Control Panel</a></p>
+    <p><a href="{% url 'control_view' %}">Go to Control Panel</a></p>
 </body>
 </html>

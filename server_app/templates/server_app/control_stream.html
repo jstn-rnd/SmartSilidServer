@@ -1,36 +1,35 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Stream Controls</title>
+    <title>Control Stream</title>
+    <script src="https://vjs.zencdn.net/7.11.4/video.min.js"></script>
+    <link href="https://vjs.zencdn.net/7.11.4/video-js.css" rel="stylesheet" />
+</head>
+<body>
+    <h1>Control Stream</h1>
+    <button onclick="startStream()">Start Streaming</button>
+    <button onclick="stopStream()">Stop Streaming</button>
+    <button onclick="viewStream()">View Stream</button>
+    <div id="stream"></div>
+
     <script>
         function startStream() {
-            fetch("{% url 'start_stream' %}")
-                .then(response => {
-                    if (response.ok) {
-                        alert("Stream started.");
-                    } else {
-                        alert("Failed to start stream.");
-                    }
-                });
+            fetch('/stream/start/', {method: 'POST'})
+                .then(response => response.text())
+                .then(data => alert(data));
         }
 
         function stopStream() {
-            fetch("{% url 'stop_stream' %}")
-                .then(response => {
-                    if (response.ok) {
-                        alert("Stream stopped.");
-                    } else {
-                        alert("Failed to stop stream.");
-                    }
-                });
+            fetch('/stream/stop/', {method: 'POST'})
+                .then(response => response.text())
+                .then(data => alert(data));
+        }
+
+        function viewStream() {
+            document.getElementById('stream').innerHTML = '<video id="video-player" class="video-js vjs-default-skin" controls width="640" height="360"><source src="/stream/view/" type="multipart/x-mixed-replace"></video>';
+            var player = videojs('video-player');
         }
     </script>
-</head>
-<body>
-    <h1>Stream Controls</h1>
-    
-    <button onclick="startStream()">Start Stream</button>
-    <button onclick="stopStream()">Stop Stream</button>
 
     <h2>View Client Screens</h2>
     <a href="{% url 'client_screens' %}">Go to Client Screens</a>

@@ -25,13 +25,12 @@ urlpatterns = [
     path('shutdown_computers', views_wol.shutdown_computers, name='shutdown_computers'),
 
     # Add paths for stream control
-    path('control/', views_stream.control_view, name='control_stream'),  # Control panel
-    path('start-stream/', views_stream.start_stream, name='start_stream'),  # Start streaming
-    path('stop-stream/', views_stream.stop_stream, name='stop_stream'),  # Stop streaming
-
-    # Path for streaming view
-    path('stream/', views_stream.stream_view, name='stream'),
-    path('stream-status/', views_stream.stream_status, name='stream_status'),
+    path('stream/status/', views_stream.stream_status, name='stream_status'),
+    path('stream/start/', views_stream.start_stream, name='start_stream'),
+    path('stream/stop/', views_stream.stop_stream, name='stop_stream'),
+    path('stream/', views_stream.stream_view, name='stream_view'),
+    path('upload/', views_stream.upload_screen, name='upload_screen'),
+    path('control/', views_stream.control_view, name='control_view'),
 
     # Monitoring URLs
    path('upload_screen/', views_monitoring.upload_screen, name='upload_screen'),
