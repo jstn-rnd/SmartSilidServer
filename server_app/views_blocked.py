@@ -1,92 +1,103 @@
-import win32com.client
-import pythoncom
-import logging
 from django.shortcuts import render, redirect
-from .models import Whitelist, Blacklist
+from django.http import HttpResponse
+from .models import BlockedURL
+import subprocess
 
-# Set up logging
-logging.basicConfig(filename='gpo_update.log', level=logging.DEBUG)
+# Function to run the PowerShell script
+def run_powershell_script(url_list):
+    script = f'''
+    Import-Module GroupPolicy
 
-def update_gpo():
-    """
-    Updates the Group Policy Object (GPO) with the current blacklist URLs.
+    $GPOName = "block"
+    $newURLs = @({", ".join([f'"{url}"' for url in url_list])})
+
+    $gpo = Get-GPO -Name $GPOName -ErrorAction SilentlyContinue
+    if (-not $gpo) {{
+        $gpo = New-GPO -Name $GPOName
+    }}
+
+    # Microsoft Edge URLBlocklist registry path
+    $edgeRegistryPath = "HKCU\\Software\\Policies\\Microsoft\\Edge\\URLBlocklist"
     
-    Handles initialization and cleanup of COM for thread safety.
+    # Google Chrome URLBlocklist registry path
+    $chromeRegistryPath = "HKCU\\Software\\Policies\\Google\\Chrome\\URLBlocklist"
+    
+    # Firefox URLBlocklist registry path (if using ADMX template)
+    $firefoxRegistryPath = "HKCU\\Software\\Policies\\Mozilla\\Firefox\\WebsiteFilter\\Block"
 
-    Raises an exception if any error occurs during the update process.
-    """
-    try:
-        pythoncom.CoInitialize()  # Initialize COM for thread safety
+    # Function to clear and add new URLs for a browser
+    function Set-URLBlocklist ($gpoName, $registryPath, $urls) {{
+        # Check if registry path exists before removing
+        $keyExists = Get-GPRegistryValue -Name $gpoName -Key $registryPath -ErrorAction SilentlyContinue
+        if ($keyExists) {{
+            Remove-GPRegistryValue -Name $gpoName -Key $registryPath -ErrorAction SilentlyContinue
+        }}
 
-        # Connect to the GPO management COM object
-        gpo_management = win32com.client.Dispatch("SomeOther.GPOManagement")  # Replace with correct COM object
+        # Add new URLs
+        for ($i = 0; $i -lt $urls.Count; $i++) {{
+            Set-GPRegistryValue -Name $gpoName -Key $registryPath -ValueName "$i" -Type String -Value $urls[$i] -ErrorAction SilentlyContinue
+        }}
+    }}
 
-        # Retrieve the specified GPO by its GUID
-        gpo_guid = "53582B9C-5D78-40F2-8B14-223EECEAD27B"  # Replace with your GPO GUID
-        gpo = gpo_management.GetGPO(gpo_guid)  # Ensure this method exists or use the correct method
-        
-        # Access the policy settings (modify as needed based on the actual COM object's API)
-        policy = gpo.GetSettings()
-        edge_policy = policy.AdministrativeTemplates.MicrosoftEdge
+    # Set URL blocklist for Edge
+    Set-URLBlocklist -gpoName $GPOName -registryPath $edgeRegistryPath -urls $newURLs
+    
+    # Set URL blocklist for Chrome
+    Set-URLBlocklist -gpoName $GPOName -registryPath $chromeRegistryPath -urls $newURLs
 
-        # Fetch current blacklist data
-        blacklist = Blacklist.objects.values_list('url', flat=True)
+    # Set URL blocklist for Firefox
+    Set-URLBlocklist -gpoName $GPOName -registryPath $firefoxRegistryPath -urls $newURLs
 
-        # Update the policy to block URLs
-        edge_policy.BlockAccessToListOfURLs = blacklist
-        
-        # Save the changes
-        gpo.Save()
+    # Suppress any output
+    $null = Write-Host "Policy reset to Not Configured and new URLs added." -ErrorAction SilentlyContinue
 
-        print("GPO updated successfully.")
+    $username = "Administrator"
+    $password = "Admin123"
+    $clientComputers = "DESKTOP-HBTUJID"
 
-    except Exception as e:
-        logging.error(f"An error occurred while updating GPO: {e}", exc_info=True)
-        raise Exception(f"An error occurred while updating GPO: {e}")
+    $securePassword = ConvertTo-SecureString $password -AsPlainText -Force
+    $credential = New-Object System.Management.Automation.PSCredential ($username, $securePassword)
 
-    finally:
-        pythoncom.CoUninitialize()  # Cleanup COM
+    try {{
+        $session = New-PSSession -ComputerName $clientComputers -Credential $credential -ErrorAction Stop
+        Invoke-Command -Session $session -ScriptBlock {{
+            gpupdate /force
+        }} -ErrorAction Stop | Out-Null
+    }} catch {{
+        $null = Write-Error "An error occurred: $_" -ErrorAction SilentlyContinue
+    }} finally {{
+        if ($session) {{
+            Remove-PSSession -Session $session
+        }}
+    }}
+    '''
+    process = subprocess.Popen(["powershell", "-Command", script], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    process.communicate()  # Wait for the script to finish
 
-def whitelist_view(request):
-    """
-    Handles adding and removing URLs from the whitelist.
-
-    Updates the GPO with the modified whitelist after each change.
-    """
+# View to list, add, and delete URLs
+def blocked_url_manage(request):
     if request.method == 'POST':
-        if 'add' in request.POST:
-            url = request.POST.get('url')
-            if url:
-                Whitelist.objects.get_or_create(url=url)
-                update_gpo()
-        elif 'remove' in request.POST:
-            url = request.POST.get('url')
-            if url:
-                Whitelist.objects.filter(url=url).delete()
-                update_gpo()
-        return redirect('whitelist')
+        # If the form is submitted, add a new URL
+        url = request.POST.get('url')
+        if url:
+            BlockedURL.objects.create(url=url)
+    
+    # If 'delete' is in the request, delete the selected URL
+    if 'delete' in request.GET:
+        url_id = request.GET.get('delete')
+        try:
+            url = BlockedURL.objects.get(id=url_id)
+            url.delete()
+        except BlockedURL.DoesNotExist:
+            pass  # Handle the case where the URL does not exist
 
-    whitelist = Whitelist.objects.all()
-    return render(request, 'server_app/whitelist.html', {'whitelist': whitelist})
+    # List all blocked URLs
+    urls = BlockedURL.objects.all()
 
-def blacklist_view(request):
-    """
-    Handles adding and removing URLs from the blacklist.
+    # To run the PowerShell script, check if 'update_gpo' is in the GET request
+    if 'update_gpo' in request.GET:
+        url_list = [url.url for url in urls]
+        run_powershell_script(url_list)
+        return redirect('manage_blocked_urls')  # Redirect back to the list view
 
-    Updates the GPO with the modified blacklist after each change.
-    """
-    if request.method == 'POST':
-        if 'add' in request.POST:
-            url = request.POST.get('url')
-            if url:
-                Blacklist.objects.get_or_create(url=url)
-                update_gpo()
-        elif 'remove' in request.POST:
-            url = request.POST.get('url')
-            if url:
-                Blacklist.objects.filter(url=url).delete()
-                update_gpo()
-        return redirect('blacklist')
-
-    blacklist = Blacklist.objects.all()
-    return render(request, 'server_app/blacklist.html', {'blacklist': blacklist})
+    return render(request, 'server_app/manage.html', {'urls': urls})
