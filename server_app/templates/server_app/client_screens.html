@@ -46,13 +46,13 @@
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const clientIds = ['client_1', 'client_2'];
-            const refreshInterval = 1000 / 60; // Refresh 10 times per second
+            const refreshInterval = 1000 / 60; // Refresh 60 times per second
 
             async function refreshScreens() {
                 for (let id of clientIds) {
                     const img = document.getElementById(id);
                     try {
-                        const url = "{% url 'view_screen' 'client_id' %}".replace('client_id', id);
+                        const url = `{% url 'view_screen' 'client_id' %}`.replace('client_id', id);
                         const response = await fetch(url, {
                             headers: { 'If-None-Match': img.dataset.etag || '' }
                         });
@@ -63,6 +63,7 @@
                             img.style.opacity = 0; // Fade out before changing source
                             img.onload = () => {
                                 img.style.opacity = 1; // Fade in after loading new image
+                                URL.revokeObjectURL(newSrc); // Clean up after image is loaded
                             };
                             img.src = newSrc;
                             img.dataset.etag = response.headers.get('ETag') || ''; // Update ETag
