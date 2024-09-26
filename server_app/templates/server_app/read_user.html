@@ -1,0 +1,38 @@
+<html>
+    <body> 
+        <table>
+            <tr>
+                <th> Username</th>
+                <th colspan = 2> Edit Password </th>
+                <th> Delete</th>
+            </tr>
+        {%for user in users %}
+            <tr>  
+                    {% csrf_token %}
+                <td> {{user}} </td>
+                
+                <td> 
+                    <form method = 'POST' action = "{%url 'change_attribute_user'%}">
+                        {% csrf_token %}
+                        <input type = hidden name = username value = '{{user}}'>
+                        <input type = hidden name = OU value = 'student'>
+                        <input type = hidden name = attribute value = 'password'>
+                        <input type = text name = 'value'>
+                        <button id = "button"> Change Password </button>
+                    </form>
+                </td>
+
+                <td> 
+                    <form method = 'POST' action = "{% url 'delete_user' %}"> 
+                        {% csrf_token %}
+                        <input type = hidden name = username value = '{{user}}'>
+                        <button id = "button"> Delete </button>
+                    </form>
+                </td>
+            </tr>
+        {%endfor%}
+        </table>
+
+       
+    </body>
+</html>

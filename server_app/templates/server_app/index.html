@@ -1,0 +1,22 @@
+<html>
+    <body>
+        <!-- <form action="{% url 'create_user' %}" method = "POST">
+            {% csrf_token %}
+            <input type = text name = username>
+            <input type = text name = password>
+            <input type = text name = first_name>
+            <input type = text name = last_name>
+            <input type = submit>
+        </form> -->
+        <a href = "{% url 'create_user_page'%}" > Create User</a>
+        <a href = "{% url 'read_user'%}"> Read User </a>
+        <form action = "{% url 'add_user_logs' %}"> 
+            <button> user logs</button>
+        </form>
+
+        <form action = "{% url 'add_computer_logs' %}"> 
+            <button> computer logs</button>
+        </form>
+        
+    </body>
+</html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Blocked URLs</title>
+</head>
+<body>
+    <h1>Manage Blocked URLs</h1>
+    
+    <!-- Form to Add a New Blocked URL -->
+    <h2>Add New URL</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <label for="url">URL:</label>
+        <input type="text" name="url" id="url" required>
+        <button type="submit">Add</button>
+    </form>
+
+    <!-- List of Blocked URLs -->
+    <h2>Blocked URLs</h2>
+    <ul>
+        {% for url in urls %}
+            <li>
+                {{ url.url }}
+                <a href="?delete={{ url.id }}" style="color: red;">Delete</a>
+            </li>
+        {% empty %}
+            <li>No URLs blocked yet.</li>
+        {% endfor %}
+    </ul>
+
+    <!-- Button to Update GPO -->
+    <br>
+    <a href="?update_gpo=true" style="color: green;">Update GPO</a>
+</body>
+</html>

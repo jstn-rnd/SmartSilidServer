@@ -1,0 +1,21 @@
+<!-- server_app/templates/server_app/screen_sharing.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Screen Share</title>
+</head>
+<body>
+    <img id="screen" style="width: 100%; height: auto;">
+    <script>
+        const ws = new WebSocket('ws://' + window.location.host + '/ws/screen/');
+        const img = document.getElementById('screen');
+
+        ws.onmessage = function(event) {
+            const arrayBuffer = event.data;
+            const blob = new Blob([arrayBuffer], { type: 'image/png' });
+            img.src = URL.createObjectURL(blob);
+        };
+    </script>
+</body>
+</html>
