@@ -9,7 +9,7 @@ from django.views.decorators.http import require_POST
 from django.shortcuts import render, HttpResponse, get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from .models import Schedule, RfidLogs, User, RFID, RFID
+from .models import Schedule, RfidLogs, User, RFID, User
 from .forms import ScheduleForm
 
 from rest_framework.response import Response
@@ -127,20 +127,21 @@ def update_rfids_approval(schedule):
     current_weekday = local_time.strftime('%a')
 
     faculty = schedule.faculty
-
+    #print(f"End Time : {schedule.end_time}")
     if schedule.start_time <= current_time <= schedule.end_time and current_weekday in schedule.get_weekdays_display():
-            
+        #print("Approved")
         for rfid in faculty.rfids.all(): 
             if rfid.approved == 0:  
-                print(rfid.rfid)
                 rfid.approved = 1
                 rfid.save()
-            return schedule.id
+            #print(f"rfid : {rfid}, approve : {rfid.approved}")
+        return schedule.id
    
     else:
         for rfid in faculty.rfids.all(): 
             rfid.approved = 0
             rfid.save()
+            #print(f"rfid : {rfid}, approve : {rfid.approved}")
            
     
     return -1
@@ -156,31 +157,36 @@ def check_rfid(request):
     RFID_input = request.data.get('RFID')
 
     if RFID_input:
-        schedules = Schedule.objects.all()
-        for schedule in schedules:
-            schedule_id = update_rfids_approval(schedule)
 
         try : 
 
-            record = RFID.objects.get(rfid=RFID_input)
+            rfid = RFID.objects.filter(rfid=RFID_input).first()
+            faculty = rfid.faculty
+
+            if faculty : 
+                
+                schedules = Schedule.objects.filter(faculty = faculty)
+                for schedule in schedules:
+                    schedule_id = update_rfids_approval(schedule) 
+
+                if schedule_id >= 0: 
+                    schedule = Schedule.objects.filter(id = schedule_id).first()
+                    logs = RfidLogs(
+                        schedule = schedule, 
+                        start_time = datetime.now().strftime("%H:%M:%S")
+                    )
+                    logs.save()
+
+            rfid = RFID.objects.filter(rfid=RFID_input).first()
             response = {
                 "status": "success",
                 "message": "RFID exists",
-                "ID": record.id,
-                "RFID": record.rfid,
-                "Approve": record.approved  # This will be based on the latest schedule check or manual update
-            }
+                "ID": rfid.id,
+                "RFID": rfid.rfid,
+                "Approve": rfid.approved  # This will be based on the latest schedule check or manual update
+            }          
 
-            print(schedule_id)
-
-            if schedule_id >= 0: 
-                
-                schedule = Schedule.objects.filter(id = schedule_id).first()
-                logs = RfidLogs(
-                    schedule = schedule, 
-                    start_time = datetime.now().strftime("%H:%M:%S")
-                )
-                logs.save()
+            #print(response)
         
         except RFID.DoesNotExist:
 
@@ -200,7 +206,7 @@ def check_rfid(request):
 
 #authentication
 @api_view(['POST'])
-def bind_rfid(request): 
+def bind_rfid(request):  
     rfid = request.data.get('RFID')
     username = request.data.get('username')
 
@@ -218,6 +224,19 @@ def bind_rfid(request):
         return Response({
             "status_message" : "Missing or invalid input"
         })
+
+@api_view(['POST'])
+def get_all_rfid(request):
+
+    rfids = RFID.objects.all()
     
+    response = []
+    for rfid in rfids: 
+        response.append(rfid.rfid)
+
+    return Response({
+        "status_message" : "RFID successfully retrieved",
+        "rfids" : response
+    }) 
 
 

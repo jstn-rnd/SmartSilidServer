@@ -1,14 +1,14 @@
 from django.urls import path
-from . import views_logs, views_rfid, views_users, views_blocked, views_wol, views_stream, views_monitoring
+from . import views_logs, views_rfid, views_student, views_blocked, views_wol, views_stream, views_monitoring
 from . import views_section, views_schedule
 urlpatterns = [
     
-    path("create_student", views_users.create_student, name="create_student"),
-    path("delete_student", views_users.delete_student, name="delete_student"),
-    path("change_password_student", views_users.change_password_student, name="change_password_student"),
-    path("auth_user", views_users.auth_user, name="auth_user"),
-    path("get_all_students", views_users.get_all_students, name="get_all_students"),
-    path("move_section", views_users.move_section, name = "move_section"),
+    path("create_student", views_student.create_student, name="create_student"),
+    path("delete_student", views_student.delete_student, name="delete_student"),
+    path("change_password_student", views_student.change_password_student, name="change_password_student"),
+    path("auth_user", views_student.auth_user, name="auth_user"),
+    path("get_all_students", views_student.get_all_students, name="get_all_students"),
+    path("move_section", views_student.move_section, name = "move_section"),
 
     path('add_user_logon', views_logs.add_user_logon, name="add_user_logon"),
     path('add_user_logoff', views_logs.add_user_logoff, name="add_user_logoff"),
@@ -17,6 +17,8 @@ urlpatterns = [
 
     path('check_rfid/', views_rfid.check_rfid, name='check_rfid'),
     path('bind_rfid', views_rfid.bind_rfid, name = "bind_rfid"),
+    path("get_all_rfid", views_rfid.get_all_rfid, name = "get_all_rfid"), 
+
     path('view_records/', views_rfid.view_records, name='view_records'),
     path('update_approve_status/', views_rfid.update_approve_status, name='update_approve_status'),
     path('manage_schedules/', views_rfid.manage_schedules, name='manage_schedules'),
