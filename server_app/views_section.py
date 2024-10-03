@@ -67,6 +67,11 @@ def add_section(request):
 def delete_section(request):
     section_name = request.data.get("name")
 
+    if not section_name: 
+        return Response({
+            "status_message" : "Missing or invalid input"
+        })
+
     section_object = Section.objects.filter(name=section_name).first()
 
     if section_object : 

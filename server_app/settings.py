@@ -6,9 +6,8 @@ from pyad.adquery import ADQuery
 pythoncom.CoInitialize()  # Ensure CoInitialize is called before any COM object is used
 from pyad import * 
 AD_SERVER = "WIN-33NJQTDP4IV.smartsilid.com"
-AD_USER = "facultyA1"
-AD_PASSWORD = "NitroSense555"
-SITE_HOST = '192.168.10.112'
+AD_USER = "Administrator"
+AD_PASSWORD = "Admin123"
 
 def get_ad_connection():
     try:

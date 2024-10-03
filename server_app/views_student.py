@@ -6,7 +6,6 @@ from .settings import get_ad_connection
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from .models import User, Section, Student
-from django.contrib.auth import authenticate, login
 from .configurations import AD_BASE_DN
 import pythoncom
 import win32com.client
@@ -72,51 +71,7 @@ def create_student(request):
 
     else:
         return Response({"status_message" : "Failed to connect to Active Directory"})
-    
-# def read_user(request): 
-#     if get_ad_connection():
-#         AD_BASE_DN = "DC=justine-server,DC=com"
 
-#         try:
-#             container = pyad.adcontainer.ADContainer.from_dn(f"OU=Student,{AD_BASE_DN}")
-#             users = []
-           
-#             for obj in container.get_children():
-                
-#                 user_data = obj.get_attribute("samaccountname")[0],
-#                 print(user_data)
-#                 users.append(user_data)
-            
-#             users2 = list(zip(*users))[0]
-#             return render(request, 'server_app/read_user.html', {'users' : users2})
-
-#         except Exception as e:
-#             print(f"Failed to retrieve user: {str(e)}")
-#             return {"error": f"Failed to retrieve user: {str(e)}"}
-
-#     else:
-#         return {"error": "Failed to connect to Active Directory"}
-
-#admin shit 
-@api_view(['POST'])
-def auth_user(request):
-    username = request.data.get("username")
-    password = request.data.get("password")
-    print(username + password)
-
-    user = authenticate(request, username=username, password=password)
-
-    if user is not None:
-        print("yehey")
-        return Response({
-            "status": "True",
-            "status_message": "User successfully authenticated"
-        })
-    else : 
-        return Response({
-            "status": "False",
-            "status_message": "User not found"
-        })
 
 @api_view(['POST'])
 def delete_student(request):
@@ -156,7 +111,6 @@ def change_password_student(request):
     student = Student.objects.filter(username = username).first()
     value = request.data.get('new_password')
     
-
     if student: 
         
         try :
@@ -221,6 +175,7 @@ def get_all_students(request):
 
     for student in students:
         info = {
+            "id" : student.id,
             "first_name" : student.first_name, 
             "last_name" : student.last_name, 
             "middle_initial" : student.middle_initial,
@@ -232,4 +187,4 @@ def get_all_students(request):
         "status_message" : "User obtained succesfully",
         "students" : result 
     })
-            
+

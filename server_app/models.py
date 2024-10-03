@@ -3,7 +3,8 @@ from django.contrib.auth.models import AbstractUser
 from datetime import datetime, date
 
 class User(AbstractUser):
-    middle_initial = models.CharField(default= " ", max_length=20)
+    middle_initial = models.CharField(default= " ", max_length=1)
+    type = models.CharField(default=" ", max_length=20)
 
 class Section(models.Model): 
     id = models.AutoField(primary_key=True)
@@ -11,7 +12,7 @@ class Section(models.Model):
     
 class Student(models.Model):
     first_name = models.CharField(default=" ", max_length=20)
-    middle_initial = models.CharField(default=" ", max_length=20)
+    middle_initial = models.CharField(default=" ", max_length=1)
     last_name = models.CharField(default=" ", max_length=20)
     username = models.CharField(default=" ", max_length=20)
     section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name='Users', null = True)
@@ -73,6 +74,8 @@ class BlockedURL(models.Model):
 
 class RfidLogs(models.Model): 
     schedule = models.ForeignKey(Schedule, on_delete = models.CASCADE)
+    date = models.DateField()
     start_time = models.TimeField()
+    
 
 

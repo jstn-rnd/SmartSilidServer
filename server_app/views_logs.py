@@ -101,17 +101,23 @@ def add_user_logoff(request):
 
 
 @api_view(['POST'])
-def get_logs_student(request):
-    pagination = float(request.data.get("pagination", None))
+def get_logs_computer(request):
+    pagination = request.data.get("pagination", None)
     start_date = request.data.get("start_date", None)
     end_date = request.data.get("end_date", None)
     username = request.data.get("username", None)
     computer_name = request.data.get("computer_name", None)
 
-    print(pagination)
-
     if not start_date and not end_date :
         start_date_params = date(1, 1, 1)
+        end_date_params = date(9999, 12, 31)
+
+    elif not start_date:
+        start_date_params = date(1, 1, 1)
+        end_date_params = parse_date(end_date) 
+
+    elif not end_date :
+        start_date_params = parse_date(start_date)
         end_date_params = date(9999, 12, 31)
 
     else :
@@ -120,6 +126,8 @@ def get_logs_student(request):
 
     if not pagination: 
         pagination = 1
+    
+    pagination = float(pagination)
     
     logs = []
     
@@ -182,5 +190,3 @@ def get_logs_student(request):
         "logs" : json_response,
         "pagination_length" : pagination_length
     })
-
-# logs for faculty

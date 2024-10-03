@@ -1,7 +1,9 @@
 from .models import Schedule, User, Section
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from datetime import datetime
+from datetime import datetime, time, timedelta
+from django.utils.dateparse import parse_date
+from server_app.Utils.schedule_utils import check_if_time_is_valid, check_schedule_overlap
 
 @api_view(['POST'])
 def add_schedule(request): 
@@ -13,9 +15,6 @@ def add_schedule(request):
     weekdays = request.data.get("weekdays")
     faculty = request.data.get("faculty_name")
 
-    faculty_object = User.objects.filter(username = faculty).first()
-    section_object = Section.objects.filter(name = section).first()
-
     print(subject)
     print(section)
     print(start_time)
@@ -23,26 +22,44 @@ def add_schedule(request):
     print(weekdays)
     print(faculty)
 
+    faculty_object = User.objects.filter(username = faculty).first()
+    section_object = Section.objects.filter(name = section).first()
+
     if subject and section_object and start_time and end_time and weekdays and faculty_object: 
         
         try:
-            start_time_format = datetime.strptime(start_time, '%H:%M') 
-            end_time_format = datetime.strptime(end_time, '%H:%M') 
+            start_time_format = datetime.strptime(start_time, '%H:%M').time() 
+            end_time_format = datetime.strptime(end_time, '%H:%M').time()
 
-            schedule = Schedule(
-                faculty = faculty_object, 
-                subject = subject, 
-                section = section_object, 
-                weekdays = weekdays, 
-                start_time = start_time_format, 
-                end_time = end_time_format
-            )
-            schedule.save()
+            valid = check_if_time_is_valid(start=start_time_format, end=end_time_format)
+            not_overlap = check_schedule_overlap(day=weekdays, start=start_time_format, end=end_time_format)
+
+            print(valid)
+            print(not_overlap)
+
+            if valid and not not_overlap: 
+                schedule = Schedule(
+                    faculty = faculty_object, 
+                    subject = subject, 
+                    section = section_object, 
+                    weekdays = weekdays, 
+                    start_time = start_time_format, 
+                    end_time = end_time_format
+                )
+                schedule.save()
+                print(1)
+                return Response({
+                    "status_message" : "Schedule succesfully added"
+                })
+            
+            print(2)
             return Response({
-                "status_message" : "Schedule succesfully added"
+                "status_message" : "Time may be invalid or overlaps on another schedule"
             })
 
+        
         except Exception as e: 
+            print(3)
             return Response({
                 "status_message" : "Error in adding schedule",
                 "error_message" : str(e)
@@ -52,3 +69,153 @@ def add_schedule(request):
         return Response({
             "status_message" : "Missing or Invalid Input"
         }) 
+    
+@api_view(['POST'])
+def get_all_schedule(request):
+    schedules = Schedule.objects.all()
+
+    weekdays = Schedule.WEEKDAYS
+    weekday_order = {abbr: index for index, (abbr, day) in enumerate(weekdays)}
+
+    sorted_objects = sorted(schedules, key=lambda schedule: weekday_order[schedule.weekdays])
+
+    json_response = []
+    for schedule in sorted_objects:
+        data = {
+            'id' : schedule.id,
+            'subject' : schedule.subject,
+            'section' : schedule.section.name,
+            'start_time' : schedule.start_time,
+            'end_time' : schedule.end_time,
+            'weekdays' : schedule.weekdays,
+            'faculty' : schedule.faculty.username,
+        }
+
+        json_response.append(data)
+
+    return Response({
+        "status_message" : "Success",
+        "schedule" : json_response
+       })
+
+@api_view(['POST'])
+def update_schedule(request): 
+    id = request.data.get("id")
+    subject = request.data.get("subject", None)
+    section = request.data.get("section", None)
+    start_time = request.data.get("start_time", None)
+    end_time = request.data.get("end_time", None)
+    weekdays = request.data.get("weekdays", None)
+    faculty = request.data.get("faculty", None)
+
+    if not id : 
+        return Response({
+            "status_message" : "Id field is required"
+        })
+    
+    error_message = []
+    schedule = Schedule.objects.filter(id=id).first()
+
+    if not schedule: 
+        return Response({
+            "status_message" : "Schedule not found"
+        })
+
+    if subject: 
+        schedule.subject = subject
+
+    if section : 
+        section_obj = Section.objects.filter(name = section).first()
+       
+        if section_obj: 
+            schedule.section = section_obj
+
+        else :
+            error_message.append("Section is not found")
+
+    if start_time: 
+        try: 
+            start = datetime.strptime(start_time, '%H:%M').time()
+            end = schedule.end_time
+
+            overlap = check_schedule_overlap(schedule.weekdays, start, end)
+            valid = check_if_time_is_valid(start=start, end=end)
+
+            if not overlap and valid: 
+                schedule.start_time = start
+            
+            else : 
+                error_message.append("Invalid start time")
+                print("B")
+        
+        except ValueError as e:
+            print("A")
+            error_message.append("Invalid start time")
+
+    if end_time: 
+        try: 
+            end = datetime.strptime(end_time, '%H:%M').time()
+            start = schedule.start_time
+            
+            overlap = check_schedule_overlap(schedule.weekdays, start, end)
+            valid = check_if_time_is_valid(start=start, end=end)
+
+            if not overlap and valid: 
+                schedule.end_time = end
+            
+            else : 
+                error_message.append("Invalid end time")
+        
+        except ValueError as e:
+            print(str(e))
+            error_message.append("Invalid end time")
+        
+    if weekdays: 
+        WEEKDAYS = Schedule.WEEKDAYS
+
+        if weekdays in WEEKDAYS: 
+            schedule.weekdays = weekdays
+        else: 
+            error_message.append("Day code is not valid")
+
+    if faculty: 
+        faculty_object = User.objects.filter(username = faculty).first()
+
+        if faculty_object : 
+            schedule.faculty = faculty_object
+        else : 
+            error_message.append("Faculty not found")
+
+    if not subject and not section and not start_time and not end_time and not weekdays and not faculty:
+        error_message.append("No change parameters was passed")
+
+    schedule.save()
+
+    return Response({
+        "status_message" : "Update was finished",
+        "error_message" : error_message 
+    })
+
+@api_view(['POST'])
+def delete_schedule(request): 
+    id = request.data.get("id")
+
+    if not id : 
+        return Response({
+            "status_message" : "ID is required"
+        })
+    schedule = Schedule.objects.filter(id= id).first()
+
+    if not schedule : 
+        return Response({
+            "status_message" : "Schedule not found"
+        })
+    
+    schedule.delete()
+
+    return Response({
+        "status_message" : "Schedule has been deleted succesfully"
+    })
+
+  
+        
