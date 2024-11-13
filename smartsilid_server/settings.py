@@ -25,7 +25,17 @@ SECRET_KEY = 'django-insecure-xg)g%m6e^za11+c9^p3zn3*!d1wq#7=nl#$z9qyemc$c)x#=4b
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.10.112', '127.0.0.1', 'localhost', '192.168.10.113']
+ALLOWED_HOSTS = [
+    '192.168.1.109',
+    '192.168.1.103', 
+    '127.0.0.1', 
+    'localhost', 
+    '192.168.10.113', 
+    '192.168.10.112',
+    '5009-120-28-251-222.ngrok-free.app',
+    "192.168.1.10",
+    ]
+
 SITE_HOST = '192.168.10.119'
 # Application definition
 
@@ -34,6 +44,7 @@ INSTALLED_APPS = [
     'smartsilid_server',
     'corsheaders',
     'rest_framework',
+    'rest_framework_simplejwt',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -55,6 +66,21 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
 ]
 
+from datetime import timedelta
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+}
+
 
 SECURE_COOKIES = True
 
@@ -71,6 +97,7 @@ CSRF_TRUSTED_ORIGINS = [
     'http://localhost:3001',
     'http://localhost:3000',
 ]
+
 
 TEMPLATES = [
     {
@@ -150,3 +177,9 @@ AD_SERVER = "justine-server.com"
 GPO_GUID = "08C70DD4-D739-4938-B02E-F68144C1522D"
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 104857600  # 100 MB (adjust as needed)
+
+CHANNEL_LAYERS = {
+    "default" : {
+        "BACKEND" : "channels.layers.InMemoryChannelLayer"
+    }
+}

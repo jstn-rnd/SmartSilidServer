@@ -5,6 +5,7 @@ from datetime import datetime, date
 class User(AbstractUser):
     middle_initial = models.CharField(default= " ", max_length=1)
     type = models.CharField(default=" ", max_length=20)
+    hasWindows = models.IntegerField(default=0)
 
 class Section(models.Model): 
     id = models.AutoField(primary_key=True)
@@ -17,10 +18,13 @@ class Student(models.Model):
     username = models.CharField(default=" ", max_length=20)
     section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name='Users', null = True)
 
+# 0 is false, 1 is true
 class Computer(models.Model):
     id = models.AutoField(primary_key=True)
     computer_name = models.CharField(max_length=255, default= " ")
     mac_address = models.CharField(max_length=50, default = " ")
+    status = models.IntegerField(default=0)
+    is_admin = models.IntegerField(default=0)
 
     def __str__(self):
         return self.computer_name

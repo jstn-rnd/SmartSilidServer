@@ -13,7 +13,8 @@ from .models import Schedule, RfidLogs, User, RFID, User
 from .forms import ScheduleForm
 
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from datetime import datetime 
 from django.utils.dateparse import parse_date
 from datetime import date
@@ -229,16 +230,30 @@ def check_rfid(request):
 
 #authentication
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def bind_rfid(request):  
     rfid = request.data.get('rfid')
     username = request.data.get('username')
-
+    print(1)
     print(rfid)
     print(username)
+
+    if not rfid:
+        print(2)
+        return Response({
+            "status_message" : "Missing or invalid input"
+        })
+    
     rfid_object = RFID.objects.filter(rfid = rfid).first()
     user = User.objects.filter(username = username).first()
 
-    if rfid_object and user : 
+    if not rfid_object: 
+        print(3)
+        return Response({
+            "status_message" : "Missing or invalid input"
+        })
+
+    if user : 
         rfid_object.faculty = user
         rfid_object.save()
 
@@ -246,13 +261,22 @@ def bind_rfid(request):
         return Response({
             "status_message" : "RFID was successfully binded to user"
         }) 
-    else: 
-        print("Not ok")
-        return Response({
-            "status_message" : "Missing or invalid input"
-        })
 
+    
+    print("Not ok")
+    rfid_object.faculty = None 
+    rfid_object.save()
+
+    return Response({
+        "status_message" : "RFID was successfully unbinded to user"
+    }) 
+
+
+     
+    
+    
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def get_all_rfid(request):
 
     rfids = RFID.objects.all()
@@ -267,6 +291,7 @@ def get_all_rfid(request):
     }) 
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def get_logs_rfid(request): 
     pagination = request.data.get("pagination", None)
     start_date = request.data.get("start_date", None)
@@ -348,6 +373,7 @@ def get_logs_rfid(request):
     })
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def delete_rfid(request): 
     rfid = request.data.get("rfid")
 

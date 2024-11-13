@@ -1,11 +1,13 @@
 from .models import Schedule, User, Section
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from datetime import datetime, time, timedelta
 from django.utils.dateparse import parse_date
-from server_app.Utils.schedule_utils import check_if_time_is_valid, check_schedule_overlap
+from server_app.Utils.schedule_utils import check_if_time_is_valid, check_schedule_overlap, start_is_not_greater_than_end, check_schedule_overlap_with_specific_schedule
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def add_schedule(request): 
     
     subject = request.data.get("subject")
@@ -33,11 +35,12 @@ def add_schedule(request):
 
             valid = check_if_time_is_valid(start=start_time_format, end=end_time_format)
             not_overlap = check_schedule_overlap(day=weekdays, start=start_time_format, end=end_time_format)
-
+            end_is_greater_than_start = start_is_not_greater_than_end(start_time_format, end_time_format)
             print(valid)
             print(not_overlap)
+            print(end_is_greater_than_start)
 
-            if valid and not not_overlap: 
+            if valid and not not_overlap and end_is_greater_than_start: 
                 schedule = Schedule(
                     faculty = faculty_object, 
                     subject = subject, 
@@ -71,6 +74,7 @@ def add_schedule(request):
         }) 
     
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def get_all_schedule(request):
     schedules = Schedule.objects.all()
 
@@ -99,6 +103,7 @@ def get_all_schedule(request):
        })
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def update_schedule(request): 
     id = request.data.get("id")
     subject = request.data.get("subject", None)
@@ -106,7 +111,11 @@ def update_schedule(request):
     start_time = request.data.get("start_time", None)
     end_time = request.data.get("end_time", None)
     weekdays = request.data.get("weekdays", None)
-    faculty = request.data.get("faculty", None)
+    faculty = request.data.get("faculty_name", None)
+
+    print(start_time)
+    print(end_time)
+    print(weekdays)
 
     if not id : 
         return Response({
@@ -138,8 +147,11 @@ def update_schedule(request):
             start = datetime.strptime(start_time, '%H:%M').time()
             end = schedule.end_time
 
-            overlap = check_schedule_overlap(schedule.weekdays, start, end)
+            overlap = check_schedule_overlap_with_specific_schedule(schedule.weekdays, start, end, id)
             valid = check_if_time_is_valid(start=start, end=end)
+            print("\nSTARTTIME")
+            print(f"Nag ooverlap : {overlap}")
+            print(f"Valid ba : {valid}\n")
 
             if not overlap and valid: 
                 schedule.start_time = start
@@ -157,7 +169,7 @@ def update_schedule(request):
             end = datetime.strptime(end_time, '%H:%M').time()
             start = schedule.start_time
             
-            overlap = check_schedule_overlap(schedule.weekdays, start, end)
+            overlap = check_schedule_overlap_with_specific_schedule(schedule.weekdays, start, end, id)
             valid = check_if_time_is_valid(start=start, end=end)
 
             if not overlap and valid: 
@@ -173,10 +185,14 @@ def update_schedule(request):
     if weekdays: 
         WEEKDAYS = Schedule.WEEKDAYS
 
-        if weekdays in WEEKDAYS: 
-            schedule.weekdays = weekdays
-        else: 
-            error_message.append("Day code is not valid")
+        print(WEEKDAYS)
+
+        for days in WEEKDAYS : 
+            day = list(days)
+            if weekdays == day[0]:
+                schedule.weekdays = days[0] 
+
+
 
     if faculty: 
         faculty_object = User.objects.filter(username = faculty).first()
@@ -197,6 +213,7 @@ def update_schedule(request):
     })
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def delete_schedule(request): 
     id = request.data.get("id")
 

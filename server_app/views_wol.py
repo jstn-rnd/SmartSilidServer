@@ -4,7 +4,8 @@ from wakeonlan import send_magic_packet
 from django.shortcuts import render
 from .models import Computer
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 
 def normalize_mac(mac_address):
     """Normalize MAC address to be without hyphens and lowercase."""
@@ -37,6 +38,7 @@ def get_ip_from_mac(mac_address):
 
 #authentication
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def wake_computers(request):
 
     selected_computers = request.data.get('computers')
@@ -56,10 +58,9 @@ def wake_computers(request):
         return Response({"status_message" : f"Failed to send magic packets: {str(e)}"})
 
    
-
-
 #authentication
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def shutdown_computers(request):
 
     computers = request.data.get('computers')
@@ -109,18 +110,51 @@ def shutdown_computers(request):
     
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_all_computers(request): 
     computers = Computer.objects.all()
 
     response_json = []
 
     for computer in computers : 
-        response_json.append({"computer_name" : computer.computer_name})
+        response_json.append({
+            "computer_name" : computer.computer_name,
+            "status" : computer.status, 
+            "is_admin" : computer.is_admin
+            })
     
     return Response({
         "status" : "Computers obtained succesfully", 
         "computers" : response_json
     })
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def set_computer_admin(request): 
+    computer_name = request.data.get('computer_name')
+
+    if not computer_name:
+        return Response({
+            "status": "computer_name parameter is required."
+        })
+
+    admin_computer_exists = Computer.objects.filter(is_admin=1)
+    
+    for computer in admin_computer_exists: 
+        print(computer.computer_name)
+        computer.is_admin = 0
+        computer.save()
+    
+    new_admin = Computer.objects.filter(computer_name = computer_name).first()
+    new_admin.is_admin = 1
+    new_admin.save()
+
+    return Response({
+        "status" : "Admin computer has been updated successfully", 
+    })
+
+
+
 
 
 # def shutdown_computers(request):

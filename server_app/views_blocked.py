@@ -3,7 +3,8 @@ from django.http import HttpResponse
 from .models import BlockedURL
 import subprocess
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 
 # Function to run the PowerShell script
 def run_powershell_script(url_list):
@@ -85,6 +86,7 @@ def blocked_url_manage(request):
     return render(request, 'server_app/manage.html', {'urls': urls})
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def add_url_block(request): 
     url = request.data.get('url')
     print(url)
@@ -115,6 +117,7 @@ def add_url_block(request):
     
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_url_block(request): 
 
     
@@ -133,6 +136,7 @@ def get_url_block(request):
 
 
 @api_view(['POST'])        
+@permission_classes([IsAuthenticated])
 def delete_url_block(request): 
     url = request.data.get('url')
 

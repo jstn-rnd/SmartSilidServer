@@ -7,80 +7,43 @@
     <style>
         body {
             font-family: Arial, sans-serif;
+            text-align: center;
             margin: 20px;
-            padding: 0;
-            background-color: #f4f4f4;
         }
         h1 {
-            text-align: center;
-            color: #333;
+            margin-bottom: 20px;
         }
         .client-container {
-            margin: 20px auto;
-            text-align: center;
+            margin: 20px;
         }
-        .client-container img {
-            max-width: 50%;
-            height: auto;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            transition: opacity 0.5s ease-in-out; /* Smooth fade-in effect */
-        }
-        h3 {
-            margin-bottom: 10px;
-            color: #555;
+        img {
+            width: 100%;
+            height: auto; /* Maintain aspect ratio */
         }
     </style>
+    <script>
+        function refreshImages() {
+            const images = document.querySelectorAll('.client-container img');
+            images.forEach(function(img) {
+                img.src = img.src.split('?')[0] + '?' + new Date().getTime(); // Force refresh
+            });
+        }
+
+        // Poll every 1/60 second for 60 FPS
+        setInterval(refreshImages, 1000 / 60);
+    </script>
 </head>
 <body>
     <h1>Client Screens</h1>
-    <div class="client-container">
-        <h3>Client 1</h3>
-        <img id="client_1" src="{% url 'view_screen' 'client_1' %}" alt="Client 1 Screen" />
+    <div class="screen-container">
+        {% for computer in computers %}
+            <div class="client-container">
+                <h3>Screen of {{ computer.computer_name }}</h3>
+                <img id="client_{{ computer.computer_name|slugify }}" 
+                     src="{% url 'view_screen' client_id=computer.computer_name %}" 
+                     alt="Screen of {{ computer.computer_name }}" />
+            </div>
+        {% endfor %}
     </div>
-    <div class="client-container">
-        <h3>Client 2</h3>
-        <img id="client_2" src="{% url 'view_screen' 'client_2' %}" alt="Client 2 Screen" />
-    </div>
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const clientIds = ['client_1', 'client_2'];
-            const refreshInterval = 1000 / 60; // Refresh 60 times per second
-
-            async function refreshScreens() {
-                for (let id of clientIds) {
-                    const img = document.getElementById(id);
-                    try {
-                        const url = `{% url 'view_screen' 'client_id' %}`.replace('client_id', id);
-                        const response = await fetch(url, {
-                            headers: { 'If-None-Match': img.dataset.etag || '' }
-                        });
-
-                        if (response.status === 200) {
-                            const blob = await response.blob();
-                            const newSrc = URL.createObjectURL(blob);
-                            img.style.opacity = 0; // Fade out before changing source
-                            img.onload = () => {
-                                img.style.opacity = 1; // Fade in after loading new image
-                                URL.revokeObjectURL(newSrc); // Clean up after image is loaded
-                            };
-                            img.src = newSrc;
-                            img.dataset.etag = response.headers.get('ETag') || ''; // Update ETag
-                        } else if (response.status === 304) {
-                            // Not Modified, no action needed
-                        } else {
-                            console.error(`Failed to fetch screen for ${id}: ${response.statusText}`);
-                        }
-                    } catch (error) {
-                        console.error(`Error fetching screen for ${id}:`, error);
-                    }
-                }
-            }
-
-            // Start refreshing screens
-            setInterval(refreshScreens, refreshInterval);
-        });
-    </script>
 </body>
 </html>

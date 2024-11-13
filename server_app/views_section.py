@@ -1,6 +1,7 @@
 from .models import Section
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from .configurations import AD_BASE_DN
 import pyad
 from .settings import get_ad_connection
@@ -11,6 +12,7 @@ import pythoncom
 #Case na invalid sa db pero okay sa ad
 #User authentication sa api, kelangan admin
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def add_section(request): 
     
     section_name = request.data.get("name")
@@ -64,6 +66,7 @@ def add_section(request):
 
 #delete section 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def delete_section(request):
     section_name = request.data.get("name")
 
@@ -101,6 +104,7 @@ def delete_section(request):
         })
         
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_all_sections(request):
     sections = Section.objects.all()
     response_json = []

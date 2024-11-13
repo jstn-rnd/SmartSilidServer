@@ -4,7 +4,8 @@ import pyad
 from django.http import HttpResponse
 from .settings import get_ad_connection
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from .models import User, Section, Student
 from .configurations import AD_BASE_DN
 import pythoncom
@@ -18,7 +19,9 @@ def create_user_page(request):
 # Hindi pa naayos yung type at section
 #Lagyan ng admin rights yung mga nasa faculty
 
+
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def create_student(request):
     if get_ad_connection():
 
@@ -63,21 +66,25 @@ def create_student(request):
 
                 return Response({"status_message" : "User succesfully created"})
             else : 
-                return Response({"status_message" : "Section does not exist"})
+                return Response({"error_message" : "User does not exist"})
                     
         except Exception as e:
             print(f"Failed to create user: {str(e)}")
-            return Response({"status_message" : f"Failed to create user:3 {str(e)}"})
+            return Response({"error_message" : f"Failed to create user"})
 
     else:
-        return Response({"status_message" : "Failed to connect to Active Directory"})
+        return Response({"error_message" : "Failed to connect to Active Directory"})
 
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def delete_student(request):
     username = request.data.get("username")
     student = Student.objects.filter(username = username).first()
+
+    print(student)
     section = student.section.name
+
     
     if student : 
         try :     
@@ -102,10 +109,11 @@ def delete_student(request):
     
     else : 
         return Response({
-            "status_message" : f"User {username} does not exist"
+            "error_message" : f"User {username} does not exist"
         })
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def change_password_student(request): 
     username = request.data.get('username')
     student = Student.objects.filter(username = username).first()
@@ -134,6 +142,7 @@ def change_password_student(request):
         return Response({"status_message" : "Student not found"})
     
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def move_section(request): 
     username = request.data.get('username')
     new_section = request.data.get('new_section')
@@ -166,8 +175,8 @@ def move_section(request):
         return Response({"status_message" : "User not found"})
 
 
-
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_all_students(request):
 
     result = []
@@ -176,6 +185,7 @@ def get_all_students(request):
     for student in students:
         info = {
             "id" : student.id,
+            "username" : student.username, 
             "first_name" : student.first_name, 
             "last_name" : student.last_name, 
             "middle_initial" : student.middle_initial,
@@ -187,4 +197,82 @@ def get_all_students(request):
         "status_message" : "User obtained succesfully",
         "students" : result 
     })
+
+   
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def update_student(request): 
+    id = request.data.get("id")
+    username = request.data.get("username", None)
+    first_name = request.data.get("first_name", None)
+    last_name = request.data.get("last_name", None)
+    middle_initial =request.data.get("middle_initial", None)
+
+    errors = []
+
+    if not id : 
+        return Response({
+            "status_message" : "Missing or invalid input"
+        })
+    
+    student = Student.objects.filter(id=id).first()
+    print(Student.username)
+
+    if not student: 
+        return Response({
+            "status_message" : "Faculty not found"
+        })
+    
+    if middle_initial and len(middle_initial) != 1 : 
+        errors.append("Invalid length of middle initial")
+    
+    try: 
+        pythoncom.CoInitialize()
+        ad = win32com.client.Dispatch("ADsNameSpaces")
+        student_dn = f"CN={student.username},OU={student.section.name},OU=Student,OU=SmartSilid-Users,{AD_BASE_DN}"
+        student_ad_obj = ad.GetObject("", f"LDAP://{student_dn}")
+        # print(1)
+        
+        if username and username != student.username: 
+            if len(username) > 20: 
+                errors.append("Username too long")
+            
+            section_dn = f"OU={student.section.name},OU=Student,OU=SmartSilid-Users,{AD_BASE_DN}"
+            container = ad.GetObject("", f"LDAP://{section_dn}")
+            
+            container.MoveHere(f"LDAP://{student_dn}", f"CN={username}")
+           
+            student.username = username
+
+            student_dn = f"CN={student.username},OU={student.section.name},OU=Student,OU=SmartSilid-Users,{AD_BASE_DN}"
+            student_ad_obj = ad.GetObject("", f"LDAP://{student_dn}")
+
+            student_ad_obj.sAMAccountName = username 
+            student_ad_obj.userPrincipalName = username
+        
+        if first_name and first_name != student.first_name: 
+            student_ad_obj.givenName = first_name
+            student.first_name = first_name
+        
+        if last_name and last_name != student.last_name: 
+            student_ad_obj.sn = last_name
+            student.last_name = last_name
+
+        if middle_initial and middle_initial != student.middle_initial and len(middle_initial) == 1 :
+            student_ad_obj.initials = middle_initial.upper()
+            student.middle_initial = middle_initial.upper()
+
+        student_ad_obj.setInfo()
+        student.save()
+
+        return Response({
+            "status_message" : "Update is completed",
+            "errors" : errors
+        })
+
+    except Exception as e: 
+        return Response({
+            "status_message" : f"Update has some errors {str(e)}",
+            "errors" : errors
+        })
 
