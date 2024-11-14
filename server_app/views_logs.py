@@ -150,118 +150,101 @@ def get_logs_computer(request):
     start_date = request.data.get("start_date", None)
     end_date = request.data.get("end_date", None)
     username = request.data.get("username", None)
-    type = request.data.get("type", None)
+    user_type = request.data.get("type", None)  # 'faculty' or 'student'
     computer_name = request.data.get("computer_name", None)
+    section = request.data.get("section", None)
 
-    if not start_date and not end_date :
+    # Default date range
+    if not start_date and not end_date:
         start_date_params = date(1, 1, 1)
         end_date_params = date(9999, 12, 31)
-
     elif not start_date:
         start_date_params = date(1, 1, 1)
-        end_date_params = parse_date(end_date) 
-
-    elif not end_date :
+        end_date_params = parse_date(end_date)
+    elif not end_date:
         start_date_params = parse_date(start_date)
         end_date_params = date(9999, 12, 31)
-
-    else :
+    else:
         start_date_params = parse_date(start_date)
-        end_date_params = parse_date(end_date) 
+        end_date_params = parse_date(end_date)
 
-    if not pagination: 
+    if not pagination:
         pagination = 1
-    
+
     pagination = float(pagination)
-    
     logs = []
-    
-    items = int(pagination * 50) 
-    
-    if username and computer_name : 
-        print(1)
-        logs = UserLog.objects.filter(
-            student__username__icontains = username, 
-            computer__computer_name = computer_name, 
-            date__range=(start_date_params, end_date_params
-        )).order_by("-date", "-logonTime")[:items*2]
+    items = int(pagination * 50)
 
-        if not logs: 
-            print(2)
-            logs = UserLog.objects.filter(
-                faculty__username__icontains = username, 
-                computer__computer_name = computer_name, 
-                date__range=(start_date_params, end_date_params
-            )).order_by("-date", "-logonTime")[:items*2]
-    
-    elif username and not computer_name : 
-        print(3)
-        logs = UserLog.objects.filter(
-            student__username__icontains = username, 
-            date__range=(start_date_params, end_date_params
-        )).order_by("-date", "-logonTime")[:items*2]
+    # Initialize the query with the date range
+    logs = UserLog.objects.filter(date__range=(start_date_params, end_date_params))
 
-        if not logs: 
-            print(4)
-            logs = UserLog.objects.filter(
-                faculty__username__icontains = username, 
-                date__range=(start_date_params, end_date_params
-            )).order_by("-date", "-logonTime")[:items*2]
+    # Apply the username filter if provided
+    if username:
+        if user_type == 'faculty':  # Only filter faculty
+            logs = logs.filter(faculty__username__icontains=username, faculty__isnull=False)
+        elif user_type == 'student':  # Only filter student
+            logs = logs.filter(student__username__icontains=username, student__isnull=False)
+        else:  # If no user type is specified, filter both faculty and student
+            logs = logs.filter(
+                (Q(faculty__username__icontains=username, faculty__isnull=False) |
+                 Q(student__username__icontains=username, student__isnull=False))
+            )
 
-    elif computer_name and not username:
-        print(5)
-        logs = UserLog.objects.filter(
-            computer__computer_name = computer_name, 
-            date__range=(start_date_params, end_date_params
-        )).order_by("-date", "-logonTime")[:items*2]
+    # Apply the user_type filter if provided
+    if user_type == 'faculty':
+        logs = logs.filter(faculty__isnull=False)  # Only include logs where faculty is not null
+    elif user_type == 'student':
+    # If section is provided, filter by section
+        if section:
+            logs = logs.filter(student__isnull=False, student__section__name=section)
+        else:
+        # If section is not provided, just filter by student
+            logs = logs.filter(student__isnull=False)
+    # Apply the computer_name filter if provided
+    if computer_name:
+        logs = logs.filter(computer__computer_name=computer_name)
 
-    else :
-        print(6)
-        print("Last else")
-        logs = UserLog.objects.filter(
-            date__range=(start_date_params, end_date_params
-        )).order_by("-date", "-logonTime")[:items*2]
-    
-    if pagination > 1 :
+    # Pagination: Limit results and apply sorting
+    logs = logs.select_related('faculty', 'student', 'computer').order_by("-date", "-logonTime")[:items*2]
+
+    # Pagination exclusion logic
+    if pagination > 1:
         excluded = items - 1 - 50
-    else : 
+    else:
         excluded = -1
-    
+
     json_response = []
     for i in range(items):
         if i > excluded and i < len(logs):
-            if not logs[i].faculty:
+            if logs[i].faculty:
                 data = {
-                    "id" : logs[i].id,
-                    "computer_name" : logs[i].computer.computer_name,
-                    "username" : logs[i].student.username,
-                    "date" : logs[i].date,
-                    "logon" : logs[i].logonTime,
-                    "logoff" : logs[i].logoffTime
+                    "id": logs[i].id,
+                    "computer_name": logs[i].computer.computer_name,
+                    "username": logs[i].faculty.username,
+                    "date": logs[i].date,
+                    "logon": logs[i].logonTime,
+                    "logoff": logs[i].logoffTime
                 }
-            
-            if not logs[i].student: 
+            elif logs[i].student:
                 data = {
-                    "id" : logs[i].id,
-                    "computer_name" : logs[i].computer.computer_name,
-                    "username" : logs[i].faculty.username,
-                    "date" : logs[i].date,
-                    "logon" : logs[i].logonTime,
-                    "logoff" : logs[i].logoffTime
+                    "id": logs[i].id,
+                    "computer_name": logs[i].computer.computer_name,
+                    "username": logs[i].student.username,
+                    "date": logs[i].date,
+                    "logon": logs[i].logonTime,
+                    "logoff": logs[i].logoffTime
                 }
-
             json_response.append(data)
-    
+
     length = len(logs)
     pagination_length = length / 50
 
     if pagination_length % 1 != 0:
         pagination_length = math.floor(pagination_length)
-        pagination_length += 1  
+        pagination_length += 1
 
-           
     return Response({
-        "status_message" : "Logs obtained succesfully",
-        "logs" : json_response,
-        "pagination_length" : pagination_length
+        "status_message": "Logs obtained successfully",
+        "logs": json_response,
+        "pagination_length": pagination_length
     })
