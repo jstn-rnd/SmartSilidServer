@@ -51,6 +51,7 @@ class RFID(models.Model):
 from django.utils.translation import gettext_lazy as _
 
 class Schedule(models.Model):
+
     WEEKDAYS = [
         ('M', 'Monday'),
         ('T', 'Tuesday'),
@@ -71,7 +72,6 @@ class Schedule(models.Model):
     def __str__(self):
         return f"{self.subject} ({self.start_time} - {self.end_time})"
 
-
 class BlockedURL(models.Model):
     url = models.URLField(unique=True)
     
@@ -80,19 +80,19 @@ class BlockedURL(models.Model):
 
 class ClassInstance(models.Model): 
     schedule = models.ForeignKey(Schedule, on_delete = models.CASCADE)
-    date = models.DateField()
+    date = models.DateField(default = datetime.today().date())
 
 class Attendance(models.Model): 
     class_instance = models.ForeignKey(ClassInstance, on_delete=models.CASCADE)
-    faculty = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
-    student = models.ForeignKey(Student, null=True, blank=True, on_delete=models.CASCADE)
-    scan_time = models.TimeField()
+    fullname = models.CharField(null=True, blank=True, max_length=255)
+    type = models.CharField(null=True, blank=True, max_length=255)
+    scan_time = models.TimeField(default=datetime.now().strftime("%H:%M:%S"))
 
 class RfidLogs(models.Model): 
-    schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE, null=True, blank=True)
     user = models.CharField(null=True, blank=True, max_length=255)
     date = models.DateField(default=datetime.today().date())
     scan_time = models.TimeField(default=datetime.now().strftime("%H:%M:%S"))
+    type = models.CharField(null=True, blank=True, max_length=255, choices=[("student", "student"), ("faculty", "faculty")])
 
 class Scan(models.Model): 
     id = models.AutoField(primary_key=True)

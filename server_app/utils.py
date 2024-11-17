@@ -176,3 +176,6 @@ def convert_time(time_str):
 # logon_script_key = "Software\Policies\Microsoft\Windows\Scripts\Logon"
 # gpo_section.SetRegistryValue(logon_script_key, "ScriptName", "path_to_your_script", winreg.REG_SZ)
 # gpo_section.Save(True)
+
+
+

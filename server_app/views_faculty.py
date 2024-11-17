@@ -386,20 +386,21 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         username = request.data.get('username')
         password = request.data.get('password')
 
+        print(username)
+
         # Manually authenticate the user using Django's authenticate method
         user = authenticate(request, username=username, password=password)
-
-        if user.hasWindows != 1: 
-            return Response ({
-                "status_message" : "Invalid Account"
-            })
 
         if user is not None:
             # If the user is authenticated, generate the JWT tokens
             refresh = RefreshToken.for_user(user)
             access_token = refresh.access_token
-            print(user)
-
+            
+            if user.hasWindows != 1: 
+                return Response ({
+                    "status_message" : "Invalid Account"
+                })
+            
             # Return the tokens and user ID in the response
             response_data = {
                 'access': str(access_token),

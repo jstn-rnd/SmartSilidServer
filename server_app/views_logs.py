@@ -180,15 +180,9 @@ def get_logs_computer(request):
 
     # Apply the username filter if provided
     if username:
-        if user_type == 'faculty':  # Only filter faculty
-            logs = logs.filter(faculty__username__icontains=username, faculty__isnull=False)
-        elif user_type == 'student':  # Only filter student
-            logs = logs.filter(student__username__icontains=username, student__isnull=False)
-        else:  # If no user type is specified, filter both faculty and student
-            logs = logs.filter(
-                (Q(faculty__username__icontains=username, faculty__isnull=False) |
-                 Q(student__username__icontains=username, student__isnull=False))
-            )
+        faculty_logs = logs.filter(faculty__username__icontains = username)
+        user_logs = logs.filter(student__username__icontains = username)
+        logs = faculty_logs | user_logs
 
     # Apply the user_type filter if provided
     if user_type == 'faculty':
@@ -221,6 +215,7 @@ def get_logs_computer(request):
                     "id": logs[i].id,
                     "computer_name": logs[i].computer.computer_name,
                     "username": logs[i].faculty.username,
+                    "section" : "faculty",
                     "date": logs[i].date,
                     "logon": logs[i].logonTime,
                     "logoff": logs[i].logoffTime
@@ -230,6 +225,7 @@ def get_logs_computer(request):
                     "id": logs[i].id,
                     "computer_name": logs[i].computer.computer_name,
                     "username": logs[i].student.username,
+                    "section" : logs[i].student.section.name,
                     "date": logs[i].date,
                     "logon": logs[i].logonTime,
                     "logoff": logs[i].logoffTime

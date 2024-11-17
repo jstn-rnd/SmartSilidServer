@@ -92,6 +92,7 @@ urlpatterns = [
     # path('student-report/excel/', views_reports.generate_student_report_excel, name='student_report_excel'),
     path('student-report/pdf/', views_reports.generate_student_report_pdf, name='student_report_pdf'),
 
-
+    #attendace
+    path("get_attendance_info", views_rfid.get_attendance_info),
 ]
 

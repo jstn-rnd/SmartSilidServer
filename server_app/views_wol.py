@@ -133,12 +133,7 @@ def get_all_computers(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def set_computer_admin(request): 
-    computer_name = request.data.get('computer_name')
-
-    if not computer_name:
-        return Response({
-            "status": "computer_name parameter is required."
-        })
+    computer_name = request.data.get('computer_name', None)
 
     admin_computer_exists = Computer.objects.filter(is_admin=1)
     
@@ -146,11 +141,15 @@ def set_computer_admin(request):
         print(computer.computer_name)
         computer.is_admin = 0
         computer.save()
-    
-    new_admin = Computer.objects.filter(computer_name = computer_name).first()
-    new_admin.is_admin = 1
-    new_admin.save()
 
+    if not computer_name: 
+        new_admin = None
+    
+    else : 
+        new_admin = Computer.objects.filter(computer_name = computer_name).first()
+        new_admin.is_admin = 1
+        new_admin.save()
+    
     faculties = User.objects.all()
 
     for faculty in faculties: 
@@ -165,7 +164,7 @@ def set_computer_admin(request):
         scan.computer = computer
 
     return Response({
-        "status" : "Admin computer has been updated successfully", 
+        "status_message" : "Admin computer has been updated successfully", 
     })
 
 @api_view(['POST'])
