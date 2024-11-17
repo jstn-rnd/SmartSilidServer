@@ -180,10 +180,15 @@ def get_logs_computer(request):
 
     # Apply the username filter if provided
     if username:
-        user_logs = logs.filter(faculty__username__icontains=username, faculty__isnull=False)
-        faculty_logs = logs.filter(student__username__icontains=username, student__isnull=False)
-        logs = user_logs | faculty_logs
-
+        if user_type == 'faculty':  # Only filter faculty
+            logs = logs.filter(faculty__username__icontains=username, faculty__isnull=False)
+        elif user_type == 'student':  # Only filter student
+            logs = logs.filter(student__username__icontains=username, student__isnull=False)
+        else:  # If no user type is specified, filter both faculty and student
+            logs = logs.filter(
+                (Q(faculty__username__icontains=username, faculty__isnull=False) |
+                 Q(student__username__icontains=username, student__isnull=False))
+            )
 
     # Apply the user_type filter if provided
     if user_type == 'faculty':
@@ -210,9 +215,7 @@ def get_logs_computer(request):
 
     json_response = []
     for i in range(items):
-
         if i > excluded and i < len(logs):
-            data = {}  # Initialize data as an empty dictionary by default
             if logs[i].faculty:
                 data = {
                     "id": logs[i].id,
@@ -231,8 +234,7 @@ def get_logs_computer(request):
                     "logon": logs[i].logonTime,
                     "logoff": logs[i].logoffTime
                 }
-            if data:  # Only append if data has meaningful content
-                json_response.append(data)
+            json_response.append(data)
 
     length = len(logs)
     pagination_length = length / 50
