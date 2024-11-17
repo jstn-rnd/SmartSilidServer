@@ -6,7 +6,7 @@ from .settings import get_ad_connection
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
-from .models import User, Section, Student
+from .models import RFID, Computer, Scan, User, Section, Student
 from .configurations import AD_BASE_DN
 import pythoncom
 import win32com.client
@@ -63,6 +63,10 @@ def create_student(request):
                     )
                     
                     student.save()
+
+                scan = Scan(
+                    student = student
+                )
 
                 return Response({"status_message" : "User succesfully created"})
             else : 
@@ -176,26 +180,75 @@ def move_section(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+# @permission_classes([IsAuthenticated])
 def get_all_students(request):
 
     result = []
     students = Student.objects.all()
 
     for student in students:
+        scan = Scan.objects.filter(student = student).first()
+
+        if not scan : 
+            scan = Scan(
+                student = student
+            )
+            scan.save()
+
         info = {
             "id" : student.id,
             "username" : student.username, 
             "first_name" : student.first_name, 
             "last_name" : student.last_name, 
             "middle_initial" : student.middle_initial,
-            "section" : student.section.name
+            "section" : student.section.name, 
+            "computer" : scan.computer.computer_name if scan.computer else None,
+            "rfid" : scan.rfid.rfid if scan.rfid else None, 
         }
         result.append(info)
+
+    rfid_json = []
+    rfids = RFID.objects.all()
+
+    for rfid in rfids: 
+        scan = Scan.objects.filter(rfid=rfid).first()
+        if not scan : 
+            data = {
+                "rfid" : rfid.rfid
+            }
+            rfid_json.append(data)
     
+    computers = Computer.objects.all()
+    sections = Section.objects.all()
+    computers_json = []
+    
+    for section in sections: 
+        section_json = []
+
+        for computer in computers : 
+        
+            scan = Scan.objects.filter(
+                faculty__isnull = True, 
+                student__isnull = False, 
+                computer = computer, 
+                student__section = section).first()
+
+            if not scan: 
+                data = {
+                    "computer" : computer.computer_name
+                }
+                section_json.append(data)
+        
+        data = {
+            f"{section.name}" : section_json
+        }
+        computers_json.append(data)
+        
     return Response({
         "status_message" : "User obtained succesfully",
-        "students" : result 
+        "students" : result, 
+        "rfid" : rfid_json, 
+        "computer" : computers_json
     })
 
    

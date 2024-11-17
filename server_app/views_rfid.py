@@ -1,4 +1,6 @@
 from datetime import timezone
+import subprocess
+import time
 
 from django.shortcuts import render, redirect
 
@@ -9,7 +11,10 @@ from django.views.decorators.http import require_POST
 from django.shortcuts import render, HttpResponse, get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from .models import Schedule, RfidLogs, User, RFID, User
+from wakeonlan import send_magic_packet
+
+from server_app.views_wol import get_ip_from_mac, normalize_mac
+from .models import Computer, Schedule, RfidLogs, ClassInstance, User, RFID, User, Scan, Student
 from .forms import ScheduleForm
 
 from rest_framework.response import Response
@@ -166,113 +171,293 @@ def check_rfid(request):
     current_time = local_time.time()
     current_weekday = local_time.strftime('%a')
 
-    if RFID_input:
-        try : 
+    print(RFID_input)
 
-            rfid = RFID.objects.get(rfid=RFID_input)
-            
-            if rfid.faculty : 
-                faculty = rfid.faculty
-                schedule_id = -1 
-                schedules = Schedule.objects.filter(faculty = faculty)
+    if not RFID_input:
+           return Response({
+            "status_message" : "Invalid Input"
+        })
 
-                for schedule in schedules:
-                    if schedule.start_time <= current_time <= schedule.end_time and current_weekday in schedule.get_weekdays_display():
-                        for rfid_instance in schedule.faculty.rfids.all(): 
-                            if rfid_instance.rfid == RFID_input:  
-                                print(rfid_instance.rfid)
-                                rfid_instance.approved = 1
-                                rfid_instance.save()
-                                schedule_id = schedule.id
-                                break
-                    else : 
-                        for rfid_instance in schedule.faculty.rfids.all(): 
-                            rfid_instance.approved = 0
-                            print(0)
-                            rfid_instance.save()
+    try : 
+        rfid = RFID.objects.get(rfid=RFID_input)
+        scan = Scan.objects.filter(rfid=rfid).first()
 
-                if schedule_id >= 0: 
-                    schedule = Schedule.objects.filter(id = schedule_id).first()
-                    logs = RfidLogs(
-                        schedule = schedule, 
-                        date = datetime.today().date(), 
-                        start_time = datetime.now().strftime("%H:%M:%S"), 
+        if not scan : 
+            rfid.approved = 0
+            rfid.save()
 
-                    )
-                    logs.save()
-
-            rfid = RFID.objects.filter(rfid=RFID_input).first()
             response = {
                 "status": "success",
                 "message": "RFID exists",
                 "ID": rfid.id,
                 "RFID": rfid.rfid,
                 "Approve": rfid.approved  # This will be based on the latest schedule check or manual update
-            }          
+            }   
 
-            #print(response)
+            return Response(response)     
+
+        if scan.faculty != None: 
+            faculty = scan.faculty
+            schedule_id = -1 
+            schedules = Schedule.objects.filter(faculty = faculty)
+
+            for schedule in schedules:
+                if schedule.start_time <= current_time <= schedule.end_time and current_weekday in schedule.get_weekdays_display():
+                    rfid.approved = 1
+                    schedule_id = schedule.id 
+                    rfid.save()
+                    break
+
+                else : 
+                    rfid.approved = 0        
+                    rfid.save()
+
+            if schedule_id >= 0: 
+                schedule = Schedule.objects.filter(id = schedule_id).first()
+
+                # class_instance = ClassInstance.objects.filter(schedule = schedule, date = datetime.today().date()).first()
+
+                # if not class_instance: 
+                #     class_instance = ClassInstance(
+                #         schedule = schedule, 
+                #         date = datetime.today().date(),
+                #     )
+
+                #     class_instance.save()
+
+                # logs = RfidLogs(
+                #     class_instance = class_instance, 
+                #     faculty = datetime.today().date(), 
+                #     scan_time = datetime.now().strftime("%H:%M:%S"), 
+                # )
+
+                # logs.save()
+
+                print("Check")
+
+                logs = RfidLogs(
+                    schedule = schedule, 
+                    user = scan.faculty.username, 
+                    date = datetime.today().date(), 
+                    scan_time = datetime.now().strftime("%H:%M:%S"), 
+                )
+
+                logs.save()
+
+                if not scan.computer : 
+                    print("Error")
+
+                if scan.computer :
+                     
+                    normalized = normalize_mac(scan.computer.mac_address)
+                    print(normalized)
+
+                    send_magic_packet(normalized)
+                    
+                    time.sleep(20)
+
+                    ip_address = get_ip_from_mac(normalize_mac)
+
+                    subprocess.Popen(["mstsc", f"/v:{ip_address}"])      
+                    
+                
+        elif scan.student != None: 
+            student = scan.student
+            section = student.section
+            schedule_id = -1
+
+            schedules = Schedule.objects.filter(section = section)
+
+            for schedule in schedules:
+                print(schedule.subject)
+
+                if schedule.start_time <= current_time <= schedule.end_time and current_weekday in schedule.get_weekdays_display():
+                    rfid.approved = 1
+                    schedule_id = schedule.id 
+                    print(f"#####{rfid.approved}")
+                    rfid.save()
+                    break
+
+                else : 
+                    print("%%%%%%%%%%%%%%%%%%")
+                    rfid.approved = 0        
+                    rfid.save()
+            
+            if schedule_id >= 0: 
+                schedule = Schedule.objects.filter(id = schedule_id).first()
+                
+                logs = RfidLogs(
+                    schedule = schedule, 
+                    user = scan.student.username, 
+                    date = datetime.today().date(), 
+                    scan_time = datetime.now().strftime("%H:%M:%S"), 
+                )
+
+                logs.save()
+
+                # class_instance = ClassInstance.objects.filter(schedule = schedule, date = datetime.today().date()).first()
+
+                # if not class_instance: 
+                #     class_instance = ClassInstance(
+                #         schedule = schedule, 
+                #         date = datetime.today().date(),
+                #     )
+
+                #     class_instance.save()
+
+                # logs = RfidLogs(
+                #     class_instance = class_instance, 
+                #     student = scan.student, 
+                #     scan_time = datetime.now().strftime("%H:%M:%S"), 
+                # )
+
+                # logs.save()
         
-        except RFID.DoesNotExist:
+        print(f"RFID {rfid.rfid}")
+        print(f"RFID Approve : {rfid.approved}")
 
-            record = RFID.objects.create(rfid=RFID_input, approved=0)  # Default to 0 (denied)
-            response = {
-                "status": "success",
-                "message": "RFID added successfully",
-                "ID": record.id,
-                "RFID": record.rfid,
-                "Approve": record.approved
-            }
+        response = {
+            "status": "success",
+            "message": "RFID exists",
+            "ID": rfid.id,
+            "RFID": rfid.rfid,
+            "Approve": rfid.approved  # This will be based on the latest schedule check or manual update
+        }          
+        
 
-    else : 
-        response = {"status": "error", "message": "No RFID received from ESP32"}
-    
+        
+    except RFID.DoesNotExist:
+
+        record = RFID.objects.create(rfid=RFID_input, approved=0)  # Default to 0 (denied)
+        response = {
+            "status": "success",
+            "message": "RFID added successfully",
+            "ID": record.id,
+            "RFID": record.rfid,
+            "Approve": record.approved
+        }
+
     return Response(response)
 
-#authentication
+# ### VERSION 1 
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# def bind_rfid(request):  
+#     rfid = request.data.get('rfid')
+#     username = request.data.get('username')
+#     print(1)
+#     print(rfid)
+#     print(username)
+
+#     if not rfid:
+#         print(2)
+#         return Response({
+#             "status_message" : "Missing or invalid input"
+#         })
+    
+#     rfid_object = RFID.objects.filter(rfid = rfid).first()
+#     user = User.objects.filter(username = username).first()
+
+#     if not rfid_object: 
+#         print(3)
+#         return Response({
+#             "status_message" : "Missing or invalid input"
+#         })
+
+#     if user : 
+#         rfid_object.faculty = user
+#         rfid_object.save()
+
+#         print("Ok")
+#         return Response({
+#             "status_message" : "RFID was successfully binded to user"
+#         }) 
+
+    
+#     print("Not ok")
+#     rfid_object.faculty = None 
+#     rfid_object.save()
+
+#     return Response({
+#         "status_message" : "RFID was successfully unbinded to user"
+#     }) 
+
+
+# VERSION 2 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+# @permission_classes([IsAuthenticated])
 def bind_rfid(request):  
     rfid = request.data.get('rfid')
-    username = request.data.get('username')
-    print(1)
-    print(rfid)
-    print(username)
-
+    username = request.data.get('username', None)
+    type = request.data.get('type', None)
+    
     if not rfid:
-        print(2)
         return Response({
-            "status_message" : "Missing or invalid input"
+          "status_message" : "Missing or invalid input"
         })
     
     rfid_object = RFID.objects.filter(rfid = rfid).first()
-    user = User.objects.filter(username = username).first()
 
     if not rfid_object: 
-        print(3)
         return Response({
             "status_message" : "Missing or invalid input"
         })
-
-    if user : 
-        rfid_object.faculty = user
-        rfid_object.save()
-
-        print("Ok")
-        return Response({
-            "status_message" : "RFID was successfully binded to user"
-        }) 
-
     
-    print("Not ok")
-    rfid_object.faculty = None 
-    rfid_object.save()
+    scan = Scan.objects.filter(rfid = rfid_object).first()
+    
+    if scan: 
+        scan.rfid = None
+        scan.save()
+
+        return Response({
+            "status_message" : "Rfid is already unassigned"
+        })
+    
+    if type == "student" :
+        user = Student.objects.filter(username = username).first()
+
+        if not user: 
+            return Response({
+            "status_message" : "Student does not exist"
+            })
+        
+        scan = Scan.objects.filter(student__username = username).first()
+
+        if not scan: 
+            scan = Scan(
+                student = user, 
+                rfid = rfid_object
+            )
+
+        if scan : 
+            scan.rfid = rfid_object
+
+        scan.save()
+
+    if type == "faculty":
+        user = User.objects.filter(username = username).first()
+
+        if not user: 
+            return Response({
+            "status_message" : "Faculty does not exist"
+            })
+        
+        scan = Scan.objects.filter(faculty__username = username).first()
+
+        if not scan: 
+            scan = Scan(
+                faculty = user, 
+                rfid = rfid_object
+            )
+
+        if scan : 
+            scan.rfid = rfid_object
+
+        scan.save()
 
     return Response({
-        "status_message" : "RFID was successfully unbinded to user"
+        "status_message" : "RFID was successfully binded to user"
     }) 
-
-
-     
     
     
 @api_view(['POST'])
@@ -297,7 +482,7 @@ def get_logs_rfid(request):
     start_date = request.data.get("start_date", None)
     end_date = request.data.get("end_date", None)
     subject = request.data.get("subject", None)
-    faculty = request.data.get("faculty_name", None)
+    user = request.data.get("username", None)
     section = request.data.get("section", None)
 
     if not start_date and not end_date :
@@ -332,13 +517,13 @@ def get_logs_rfid(request):
     if subject:
         filters['schedule__subject__icontains'] = subject
 
-    if faculty:
-        filters['schedule__faculty__username__icontains'] = faculty
+    if user:
+        filters['user'] = user
 
     if section:
         filters['schedule__section__name'] = section
 
-    logs = RfidLogs.objects.filter(**filters).order_by("-date", "-start_time")[:items * 2]
+    logs = RfidLogs.objects.filter(**filters).order_by("-date", "-scan_time")[:items * 2]
 
     if pagination > 1 :
         excluded = items - 1 - 50
@@ -350,11 +535,11 @@ def get_logs_rfid(request):
         if i > excluded and i < len(logs):
             data = {
                 "id" : logs[i].id,
-                "faculty_name" : logs[i].schedule.faculty.username,
+                "username" : logs[i].user,
                 "subject" : logs[i].schedule.subject,
                 "section" : logs[i].schedule.section.name,
                 "date" : logs[i].date,
-                "start_time" : logs[i].start_time,
+                "start_time" : logs[i].scan_time,
             }
             json_response.append(data)
     

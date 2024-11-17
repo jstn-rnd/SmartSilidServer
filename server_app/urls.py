@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views_logs, views_rfid, views_student, views_blocked, views_wol, views_stream, views_monitoring
-from . import views_section, views_schedule, views_faculty, views_batch
+from . import views_section, views_schedule, views_faculty, views_batch, views_reports
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from . import consumers
@@ -53,6 +53,8 @@ urlpatterns = [
     #computer
     path('get_all_computers', views_wol.get_all_computers, name = "get_all_computers"),
     path('set_computer_admin', views_wol.set_computer_admin, name = 'set_computer_admin'), 
+    path('bind_computer', views_wol.bind_computer),
+
     # Add paths for stream control
     path('stream/status/', views_stream.stream_status, name='stream_status'),
     path('stream/start/', views_stream.start_stream, name='start_stream'),
@@ -84,5 +86,10 @@ urlpatterns = [
 
     path('upload_students', views_batch.upload_students_batch, name = 'upload_students'),
     path('upload_faculty', views_batch.upload_faculty_batch, name = 'upload_faculty'),
+
+    # path('faculty-report/excel/', views_reports.generate_faculty_report_excel, name='faculty_report_excel'),
+    path('faculty-report/pdf/', views_reports.generate_faculty_report_pdf, name='faculty_report_pdf'),
+    # path('student-report/excel/', views_reports.generate_student_report_excel, name='student_report_excel'),
+    path('student-report/pdf/', views_reports.generate_student_report_pdf, name='student_report_pdf'),
 ]
 

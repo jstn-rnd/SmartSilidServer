@@ -18,6 +18,9 @@ class Student(models.Model):
     username = models.CharField(default=" ", max_length=20)
     section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name='Users', null = True)
 
+    def __str__(self):
+        return self.username
+    
 # 0 is false, 1 is true
 class Computer(models.Model):
     id = models.AutoField(primary_key=True)
@@ -40,7 +43,6 @@ class UserLog(models.Model):
 
 class RFID(models.Model):
     rfid = models.CharField(max_length=30, unique=True)
-    faculty = models.ForeignKey(User, on_delete=models.SET_NULL, related_name= "rfids", null=True, blank=True)
     approved = models.IntegerField(default=0)  # Using IntegerField for 0 and 1 values
 
     def __str__(self):
@@ -76,10 +78,27 @@ class BlockedURL(models.Model):
     def __str__(self):
         return self.url
 
-class RfidLogs(models.Model): 
+class ClassInstance(models.Model): 
     schedule = models.ForeignKey(Schedule, on_delete = models.CASCADE)
     date = models.DateField()
-    start_time = models.TimeField()
-    
 
+class Attendance(models.Model): 
+    class_instance = models.ForeignKey(ClassInstance, on_delete=models.CASCADE)
+    faculty = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, null=True, blank=True, on_delete=models.CASCADE)
+    scan_time = models.TimeField()
+
+class RfidLogs(models.Model): 
+    schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE, null=True, blank=True)
+    user = models.CharField(null=True, blank=True, max_length=255)
+    date = models.DateField(default=datetime.today().date())
+    scan_time = models.TimeField(default=datetime.now().strftime("%H:%M:%S"))
+
+class Scan(models.Model): 
+    id = models.AutoField(primary_key=True)
+    faculty = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="Scans")
+    student = models.ForeignKey(Student, null=True, on_delete=models.SET_NULL, blank=True, related_name="Scans")
+    computer = models.ForeignKey(Computer, null=True, on_delete=models.SET_NULL, blank=True, related_name="Scans")
+    rfid = models.ForeignKey(RFID, null=True, blank=True, on_delete=models.SET_NULL, related_name="scans")
+    
 

@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from .settings import get_ad_connection
 import pyad
 from .configurations import AD_BASE_DN, domain_name
-from .models import User, RFID
+from .models import Computer, User, RFID, Scan
 from django.contrib.auth import authenticate, login
 import pythoncom
 import win32com.client
@@ -15,7 +15,7 @@ from django.contrib.auth.hashers import check_password
 
 # Gawing pywin32 based imbes na pyad 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+# @permission_classes([IsAuthenticated])
 def create_faculty(request):
     username = request.data.get('username', None)
     password = request.data.get('password')
@@ -79,6 +79,12 @@ def create_faculty(request):
             
             faculty_db.save()
 
+            new_scan = Scan(
+                faculty = faculty_db
+            )
+
+            new_scan.save()
+
             return Response({"status_message" : "User succesfully created"})
         
         return Response({
@@ -91,12 +97,21 @@ def create_faculty(request):
     
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+# @permission_classes([IsAuthenticated])
 def get_all_faculty_and_rfid(request):
     faculties = User.objects.all()
     
     json_response = []
     for faculty in faculties: 
+        scan = Scan.objects.filter(faculty = faculty).first()
+        
+        if not scan : 
+            scan = Scan(
+                faculty = faculty
+            )
+            scan.save()
+            print()
+
         data = {
             "id" : faculty.id,
             "username" : faculty.username,
@@ -104,7 +119,7 @@ def get_all_faculty_and_rfid(request):
             "middle_initial" : faculty.middle_initial, 
             "last_name" : faculty.last_name,
             "type" : faculty.type,
-            "rfid" : [rfid_instance.rfid for rfid_instance in faculty.rfids.all()]
+            "rfid" : scan.rfid.rfid if scan.rfid else None, 
         }
 
         if faculty.hasWindows == 1 :
@@ -114,16 +129,17 @@ def get_all_faculty_and_rfid(request):
     rfids = RFID.objects.all()
 
     for rfid in rfids: 
-        if not rfid.faculty : 
+        scan = Scan.objects.filter(rfid = rfid).first()
+        if not scan : 
             data = {
                 "rfid" : rfid.rfid
             }
             rfid_json.append(data)
-
+    
     return Response({
         "status_message" : "Faculties obtained succesfully", 
         "faculties" : json_response, 
-        "rfid" : rfid_json
+        "rfid" : rfid_json, 
     })
         
 @api_view(["POST"])
@@ -147,13 +163,17 @@ def delete_faculty(request):
     
     try : 
         pythoncom.CoInitialize()
-        parent_dn = f"OU=Faculty,OU=SmartSilid-Users,{AD_BASE_DN}"
-        ad = win32com.client.Dispatch("ADsNameSpaces")
-        ad_obj = ad.GetObject("", f"LDAP://{parent_dn}")
-        faculty_ad = ad_obj.Create("user", f"CN={username}") # HIndi dito nag ccreate, niloload lang ganun
-        faculty_ad.DeleteObject(0)
+        # parent_dn = f"OU=Faculty,OU=SmartSilid-Users,{AD_BASE_DN}"
+        # ad = win32com.client.Dispatch("ADsNameSpaces")
+        # ad_obj = ad.GetObject("", f"LDAP://{parent_dn}")
+        # faculty_ad = ad_obj.Create("user", f"CN={username}") # HIndi dito nag ccreate, niloload lang ganun
+        # faculty_ad.DeleteObject(0)
+
+        faculty_user = pyad.aduser.ADUser.from_cn(username)
+        faculty_user.delete()
 
         faculty_object.delete()
+        pythoncom.CoUninitialize()
 
         return Response({
             "status_message" : f"Faculty has been deleted successfully"
@@ -308,6 +328,7 @@ def update_faculty(request):
 
         user_ad_obj.setInfo()
         faculty.save()
+        pythoncom.CoUninitialize()
 
         return Response({
             "status_message" : "Update is completed",
@@ -457,6 +478,13 @@ def sign_up_admin(request):
             
             faculty_db.save()
 
+            admin_computer = Computer.objects.filter(is_admin = 1).first()
+            scan = Scan(
+                faculty = faculty_db, 
+                computer = admin_computer 
+            )
+            scan.save()
+
             return Response({"status_message" : "User succesfully created"})
         
         return Response({
@@ -493,6 +521,7 @@ def change_password_faculty_by_faculty(request):
             user_ad_obj.SetPassword(new_password)
             faculty.set_password(new_password)
             faculty.save()
+            pythoncom.CoUninitialize()
 
             return Response({"status_message" : "Student password change succesful"})
 
@@ -507,7 +536,6 @@ def change_password_faculty_by_faculty(request):
             "error_message" : str(e)
             })
     
-
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
@@ -528,10 +556,11 @@ def change_password_faculty_by_admin(request):
         pythoncom.CoInitialize()
         ad = win32com.client.Dispatch("ADsNameSpaces")
         user_dn = f"CN={username},OU=Faculty,OU=SmartSilid-Users,{AD_BASE_DN}"
-        user_ad_obj = ad.GetObject("", f"LDAP://{user_dn}")
-        user_ad_obj.SetPassword(new_password)
+        user_ads_obj = ad.GetObject("", f"LDAP://{user_dn}")
+        user_ads_obj.SetPassword(new_password)
         faculty.set_password(new_password)
         faculty.save()
+        pythoncom.CoUninitialize()
 
         return Response({"status_message" : "Student password change succesful"})
 

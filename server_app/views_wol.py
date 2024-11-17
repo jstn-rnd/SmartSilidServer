@@ -1,8 +1,9 @@
 import subprocess
+import time
 from django.http import HttpResponse
 from wakeonlan import send_magic_packet
 from django.shortcuts import render
-from .models import Computer
+from .models import RFID, Computer, Scan, Student, User
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -50,8 +51,10 @@ def wake_computers(request):
         for computer in selected_computers:
             student_mac = Computer.objects.filter(computer_name=computer).first()
             if student_mac:
+                print(student_mac.computer_name)
                 normalized_mac = normalize_mac(student_mac.mac_address)
                 send_magic_packet(normalized_mac)
+
         return Response({"status_message" : f"Sent magic packets to: {', '.join(selected_computers)}"})
     
     except Exception as e:
@@ -60,7 +63,7 @@ def wake_computers(request):
    
 #authentication
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+# @permission_classes([IsAuthenticated])
 def shutdown_computers(request):
 
     computers = request.data.get('computers')
@@ -108,7 +111,6 @@ def shutdown_computers(request):
     return Response({ "status_message" : "Shutdown commands sent successfully"})
     
     
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_all_computers(request): 
@@ -149,11 +151,81 @@ def set_computer_admin(request):
     new_admin.is_admin = 1
     new_admin.save()
 
+    faculties = User.objects.all()
+
+    for faculty in faculties: 
+        scan = Scan.objects.filter(faculty = faculty).first()
+
+        if not scan : 
+            scan = Scan(
+                faculty = faculty, 
+                computer = new_admin
+            )
+
+        scan.computer = computer
+
     return Response({
         "status" : "Admin computer has been updated successfully", 
     })
 
+@api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+def bind_computer(request): 
+    computer = request.data.get('computer')
+    username = request.data.get('username', None)
+    section = request.data.get('section')
+    
+    if not computer and not section:
+        return Response({
+          "status_message" : "Missing or invalid input"
+        })
+    
+    computer_db = Computer.objects.filter(computer_name = computer).first()
 
+    if not computer_db: 
+        return Response({
+            "status_message" : "Computer not found"
+        })
+    
+    existing_scan = Scan.objects.filter(computer = computer_db, student__section__name = section).first()
+    print("SECTION", section)
+    # print("EXISTING SCAN", existing_scan.id)
+    if not username and section and existing_scan: 
+        existing_scan.computer = None
+        existing_scan.save()
+
+        return Response({
+            "status_message" : "Computer is unassigned successfully"
+        })
+    
+
+    user = Student.objects.filter(username = username).first()
+    print(username)
+    if not user: 
+        return Response({
+        "status_message" : "Student does not exist"
+        })
+        
+    if existing_scan : 
+        existing_scan.computer = None
+        existing_scan.save()
+
+    scan = Scan.objects.filter(student__username = username).first()
+
+    if not scan: 
+        scan = Scan(
+            student = user, 
+            computer = computer_db
+        )
+
+    if scan : 
+        scan.computer = computer_db
+
+    scan.save()
+
+    return Response({
+        "status_message" : "Computer was successfully binded to user"
+    }) 
 
 
 

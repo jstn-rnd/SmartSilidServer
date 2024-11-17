@@ -32,6 +32,7 @@ def add_section(request):
             ad_obj = ad.GetObject("", f"LDAP://{parent_dn}")
             ou = ad_obj.Create("organizationalUnit", f"OU={section_name}")
             ou.SetInfo()
+            pythoncom.CoUninitialize()
             
             new_section = SectionSerializer(data=request.data)
             if new_section.is_valid(): 
@@ -87,6 +88,8 @@ def delete_section(request):
             ou.DeleteObject(0)
 
             section_object.delete()
+
+            pythoncom.CoUninitialize()
 
             return Response({
                 "status_message" : f"Section {section_name} has been deleted successfully"
