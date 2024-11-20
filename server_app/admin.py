@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import User, UserLog, Scan, Computer, ClassInstance, Attendance, Section, Student, RFID, BlockedURL, Schedule, RfidLogs
+from .models import User, UserLog, Scan, Semester, Computer, ClassInstance, Attendance, Section, Student, RFID, BlockedURL, Schedule, RfidLogs
 
 admin.site.register(Student)
 admin.site.register(RFID)
@@ -13,3 +13,4 @@ admin.site.register(RfidLogs)
 admin.site.register(Scan)
 admin.site.register(ClassInstance)
 admin.site.register(Attendance)
+admin.site.register(Semester)

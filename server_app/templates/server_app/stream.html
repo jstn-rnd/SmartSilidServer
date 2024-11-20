@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html>
 <head>
     <title>Screen Stream</title>
@@ -17,12 +17,76 @@
 <body>
     <h1>Server Screen Stream</h1>
     
-    <!-- Use the <video> tag for displaying video streams -->
     <video id="stream" controls autoplay style="width: 100%; height: auto;">
         <source src="{% url 'stream_view' %}" type="multipart/x-mixed-replace">
         Your browser does not support the video tag.
     </video>
     
+    <p><a href="{% url 'control_view' %}">Go to Control Panel</a></p>
+</body>
+</html> -->
+
+<!-- SA TAAS UNG WORKING NA LUMA -->
+
+<!-- SA BABA UNG BAGONG SEND NI MARK -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Screen Stream</title>
+    <script>
+        let token = "";  // This will hold the token once it's entered
+        let streamingActive = false;  // Track if the stream is active
+
+        // Function to refresh the stream every 1/60 second for 60 FPS
+        function refreshStream() {
+            const videoElement = document.getElementById('stream');
+            if (videoElement && streamingActive) {
+                videoElement.src = videoElement.src.split('?')[0] + '?' + new Date().getTime(); // Force refresh
+            }
+        }
+
+        setInterval(refreshStream, 1000 / 60);  // Refresh every 1/60 second
+
+        // Function to submit the token and view the stream
+        function submitTokenForm() {
+            const enteredToken = document.getElementById('token-input').value;
+            if (enteredToken === "") {
+                alert('Please enter a token!');
+                return;
+            }
+
+            // Redirect to the stream page with the token in the URL
+            window.location.href = '/stream/?token=' + enteredToken;
+        }
+    </script>
+</head>
+<body>
+    <h1>Server Screen Stream</h1>
+
+    <!-- Token Input Form (Only shown if token is not entered or invalid) -->
+    <div id="token-container">
+        <h2>Enter Token to View Stream</h2>
+        <form id="token-form" method="post" onsubmit="event.preventDefault(); submitTokenForm();">
+            {% csrf_token %}
+            <input type="text" id="token-input" name="token" placeholder="Enter token here" />
+            <button type="submit">Submit Token</button>
+        </form>
+
+        <!-- Display error if the token is invalid -->
+        {% if token_error %}
+            <p style="color: red;">Invalid token. Please try again.</p>
+        {% endif %}
+    </div>
+
+    <!-- Video Player (Initially hidden until a valid token is entered) -->
+    <video id="stream" controls autoplay style="width: 100%; height: auto; display:none;">
+        <source src="" type="multipart/x-mixed-replace">
+        Your browser does not support the video tag.
+    </video>
+
     <p><a href="{% url 'control_view' %}">Go to Control Panel</a></p>
 </body>
 </html>

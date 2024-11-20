@@ -32,6 +32,11 @@ class Computer(models.Model):
     def __str__(self):
         return self.computer_name
 
+class Semester(models.Model): 
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(null=True, blank=True, max_length=255)
+    isActive = models.BooleanField(default=False)
+
 class UserLog(models.Model): 
     id = models.AutoField(primary_key=True)
     faculty = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='UserLogs')
@@ -68,7 +73,8 @@ class Schedule(models.Model):
     end_time = models.TimeField()
     weekdays = models.CharField(max_length=1, choices=WEEKDAYS)
     faculty = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name="Schedule")
-    
+    semester = models.ForeignKey(Semester, on_delete=models.CASCADE, related_name="Schedule")
+
     def __str__(self):
         return f"{self.subject} ({self.start_time} - {self.end_time})"
 

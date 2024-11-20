@@ -275,8 +275,9 @@ def check_rfid(request):
                 attendance.save()
 
         if scan.computer : 
-            normalize_mac = normalize_mac(scan.computer.mac_address)
-            send_magic_packet(normalize_mac)
+            print(scan.computer.mac_address)
+            normalize_macs = normalize_mac(scan.computer.mac_address)
+            send_magic_packet(normalize_macs)
             scan.computer.status = 1
             scan.computer.save()
 

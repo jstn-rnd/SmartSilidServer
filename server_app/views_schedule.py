@@ -1,4 +1,4 @@
-from .models import Schedule, User, Section
+from .models import Schedule, User, Section, Semester
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -10,6 +10,7 @@ from server_app.Utils.schedule_utils import check_if_time_is_valid, check_schedu
 @permission_classes([IsAuthenticated])
 def add_schedule(request): 
     
+    semester = request.data.get("semester")
     subject = request.data.get("subject")
     section = request.data.get("section")
     start_time = request.data.get("start_time")
@@ -76,7 +77,16 @@ def add_schedule(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def get_all_schedule(request):
-    schedules = Schedule.objects.all()
+    
+    active_semester = Semester.objects.filter(isActive = True).first()
+
+    if not active_semester : 
+        return Response({
+            "status" : 0,
+            "status_message" : "No active semesters"
+        })
+    
+    schedules = Schedule.objects.filter(semester = active_semester)
 
     weekdays = Schedule.WEEKDAYS
     weekday_order = {abbr: index for index, (abbr, day) in enumerate(weekdays)}
@@ -98,7 +108,9 @@ def get_all_schedule(request):
         json_response.append(data)
 
     return Response({
-        "status_message" : "Success",
+        "status" : 1,
+        "status_message" : "Schedule has been obtained successfully",
+        "current_semester" : active_semester.name, 
         "schedule" : json_response
        })
 
@@ -234,5 +246,40 @@ def delete_schedule(request):
         "status_message" : "Schedule has been deleted succesfully"
     })
 
-  
-        
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def start_semester(request): 
+    semester_name = request.data.get("semester_name")
+
+    semesters = Semester.objects.all()
+
+    for semester in semesters : 
+        semester.isActive = False
+        semester.save()
+    
+    new_semester = Semester(
+        name = semester_name, 
+        isActive = True
+    )
+
+    new_semester.save()
+
+    return Response({
+        "status_message" : "Semester has been started succesfully"
+    })
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def end_semester(request): 
+    semesters = Semester.objects.all()
+
+    for semester in semesters : 
+        semester.isActive = False
+        semester.save()
+
+    return Response({
+        "status_message" : "Semester has been ended succesfully"
+    })
+    
+    

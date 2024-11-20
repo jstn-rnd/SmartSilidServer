@@ -56,7 +56,7 @@ urlpatterns = [
     path('bind_computer', views_wol.bind_computer),
 
     # Add paths for stream control
-    path('stream/status/', views_stream.stream_status, name='stream_status'),
+    # path('stream/status/', views_stream.stream_status, name='stream_status'),
     path('stream/start/', views_stream.start_stream, name='start_stream'),
     path('stream/stop/', views_stream.stop_stream, name='stop_stream'),
     path('stream/', views_stream.stream_view, name='stream_view'),
@@ -86,13 +86,14 @@ urlpatterns = [
 
     path('upload_students', views_batch.upload_students_batch, name = 'upload_students'),
     path('upload_faculty', views_batch.upload_faculty_batch, name = 'upload_faculty'),
-
-    # path('faculty-report/excel/', views_reports.generate_faculty_report_excel, name='faculty_report_excel'),
-    path('faculty-report/pdf/', views_reports.generate_faculty_report_pdf, name='faculty_report_pdf'),
-    # path('student-report/excel/', views_reports.generate_student_report_excel, name='student_report_excel'),
-    path('student-report/pdf/', views_reports.generate_student_report_pdf, name='student_report_pdf'),
-
     #attendace
     path("get_attendance_info", views_rfid.get_attendance_info),
+
+    #semester 
+    path("start_semester", views_schedule.start_semester), 
+
+    path('faculty-report/excel/', views_reports.generate_faculty_report_excel, name='faculty_report_excel'),
+    path('student-report/excel/', views_reports.generate_student_report_excel, name='student_report_excel'),
+    path('combined-report/excel/', views_reports.generate_combined_report_excel, name='combined_report_excel'),
 ]
 

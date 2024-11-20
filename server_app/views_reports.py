@@ -1,81 +1,72 @@
+import pandas as pd
+import openpyxl
+from openpyxl.styles import Alignment, Font, Border, Side
+from openpyxl.utils.dataframe import dataframe_to_rows
+from django.http import HttpResponse
+from datetime import date
+from django.utils import timezone
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
-from datetime import datetime, timedelta
-from django.utils import timezone
-from django.http import HttpResponse
-from django.db.models import Q
-import pandas as pd
-from io import BytesIO
-from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
-from reportlab.lib import colors
-from reportlab.lib.colors import HexColor
-from reportlab.lib.styles import getSampleStyleSheet
 from .models import UserLog, RFID
-
 
 def parse_date(date_str):
     """ Parse date string in 'YYYY-MM-DD' format and return a date object. """
     return timezone.datetime.strptime(date_str, '%Y-%m-%d').date()
 
-# @api_view(['GET'])
-# @permission_classes([IsAuthenticated])
-# def generate_faculty_report_excel(request):
+def get_default_dates():
+    """ Return default start and end dates if not provided in the query. """
+    today = date.today()
+    start_date = date(today.year, today.month, 1)  # Default to the 1st of the current month
+    end_date = today  # Default to today's date
+    return start_date, end_date
 
-#     user_logs = UserLog.objects.filter(faculty__isnull=False).select_related('faculty', 'computer')
-#     report_data = []
-#     for log in user_logs:
-#         rfid = RFID.objects.filter(faculty=log.faculty).first()
-#         report_data.append({
-#             "Faculty Username": log.faculty.username,
-#             "Faculty Name": f"{log.faculty.first_name} {log.faculty.last_name}",
-#             "Computer Name": log.computer.computer_name if log.computer else None,
-#             "Log on Date": log.date,
-#             "Log on Time": log.logonTime,
-#             "Log off Time": log.logoffTime,
-#         })
-    
-#     # Create a pandas DataFrame
-#     df = pd.DataFrame(report_data)
-#     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-#     response['Content-Disposition'] = 'attachment; filename=faculty_report.xlsx'
+def set_column_widths(sheet, dataframe):
+    """ Automatically adjust column widths based on the max length of the data in each column. """
+    for idx, col in enumerate(dataframe.columns, 1):
+        max_length = max(dataframe[col].astype(str).apply(len).max(), len(col))
+        sheet.column_dimensions[openpyxl.utils.get_column_letter(idx)].width = max_length + 2  # Add some padding
 
-#     # Convert the DataFrame to Excel and write it to the response
-#     with pd.ExcelWriter(response, engine='xlsxwriter') as writer:
-#         df.to_excel(writer, index=False, sheet_name='Faculty Report')
-#         workbook  = writer.book
-#         worksheet = writer.sheets['Faculty Report']
+def apply_borders(sheet):
+    """ Apply borders to all cells in the sheet. """
+    thin_border = Border(
+        left=Side(style='thin'),
+        right=Side(style='thin'),
+        top=Side(style='thin'),
+        bottom=Side(style='thin')
+    )
+    for row in sheet.iter_rows():
+        for cell in row:
+            cell.border = thin_border
 
-#         # Adjust column width based on max length of content
-#         for idx, col in enumerate(df.columns):
-#             max_len = df[col].astype(str).map(len).max()  
-#             max_len = max(max_len, len(col))  
-#             worksheet.set_column(idx, idx, max_len + 2)  
-#         worksheet.set_column('E:E', 12, workbook.add_format({'num_format': 'yyyy-mm-dd'}))
+def format_headers(sheet):
+    """ Format header row with bold font and centered alignment. """
+    for cell in sheet[1]:
+        cell.font = Font(bold=True)
+        cell.alignment = Alignment(horizontal='center', vertical='center')
 
-#     return response
+def format_dates(sheet, date_columns):
+    """ Format date columns in the sheet. """
+    for col in date_columns:
+        for cell in sheet[col]:
+            if isinstance(cell.value, date):
+                cell.number_format = 'YYYY-MM-DD'  # Format as date
+            elif isinstance(cell.value, str) and 'AM' in cell.value or 'PM' in cell.value:
+                cell.alignment = Alignment(horizontal='center')
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def generate_faculty_report_pdf(request):
+def generate_faculty_report_excel(request):
     # Get query parameters for start_date, end_date
     start_date_str = request.query_params.get('start_date')
     end_date_str = request.query_params.get('end_date')
 
+    # If no date is provided, use default dates
     if not start_date_str or not end_date_str:
-        return HttpResponse("Both start_date and end_date are required.", status=400)
-
-    # Parse the start and end dates
-    start_date = parse_date(start_date_str)
-    end_date = parse_date(end_date_str)
-
-    # Create a buffer to hold the PDF
-    buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=letter)
-
-    # Headers for the table
-    headers = ["Faculty Username", "Faculty Name", "Computer", "Log on Date", "Log on Time", "Log off Time"]
-    data = [headers]
+        start_date, end_date = get_default_dates()
+    else:
+        # Parse the start and end dates
+        start_date = parse_date(start_date_str)
+        end_date = parse_date(end_date_str)
 
     # Filter UserLogs for faculty within the given date range
     user_logs = UserLog.objects.filter(
@@ -83,7 +74,10 @@ def generate_faculty_report_pdf(request):
         date__range=[start_date, end_date]  # Filter by the date range
     ).select_related('faculty', 'computer')
 
+    user_logs = user_logs.order_by('-date', '-logonTime')  # Ordering by date and logonTime in descending order
+
     # Prepare data for the report
+    data = []
     for log in user_logs:
         rfid = RFID.objects.filter(faculty=log.faculty).first()
         row = [
@@ -96,69 +90,49 @@ def generate_faculty_report_pdf(request):
         ]
         data.append(row)
 
-    # Create the title and include date range
-    styles = getSampleStyleSheet()
-    title_style = styles['Heading1']
+    # Convert data to DataFrame
+    df = pd.DataFrame(data, columns=["Faculty Username", "Faculty Name", "Computer", "Log on Date", "Log on Time", "Log off Time"])
 
-    # Format date range to display in the title
-    date_range_str = f"From {start_date.strftime('%B %d, %Y')} to {end_date.strftime('%B %d, %Y')}"
+    # Create an HTTP response with the Excel file
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=faculty_report.xlsx'
 
-    # Title and date range paragraph
-    title = Paragraph(f"Faculty Computer Log Report", title_style)
-    date_range_paragraph = Paragraph(f"<strong>Date Range:</strong> {date_range_str}", styles['Normal'])
+    # Write the DataFrame to the Excel file
+    with pd.ExcelWriter(response, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False, sheet_name='Faculty Log Report')
 
-    # Add a space before the table
-    space = Spacer(1, 20)  # Empty paragraph for space
-    space2 = Spacer(1, 10)  # Extra empty paragraph for more space
+        # Get the sheet
+        sheet = writer.sheets['Faculty Log Report']
+        
+        # Set column widths
+        set_column_widths(sheet, df)
 
-    # Create the table
-    table = Table(data)
+        # Apply formatting to headers
+        format_headers(sheet)
 
-    # Apply table styles
-    table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), HexColor('#75bdc3')),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-        ('BACKGROUND', (0, 1), (-1, -1), HexColor('#e0f2ff')),
-        ('GRID', (0, 0), (-1, -1), 1, colors.black),
-        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
-        ('FONTSIZE', (0, 1), (-1, -1), 10),
-    ]))
+        # Apply borders to all cells
+        apply_borders(sheet)
 
-    # Build the PDF with title, date range, and space before the table
-    doc.build([title, date_range_paragraph, space, space2, table])
-
-    # Return the PDF as response
-    buffer.seek(0)
-    response = HttpResponse(buffer, content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename=faculty_report.pdf'
+        # Format date columns (Log on Date and Log off Time)
+        format_dates(sheet, date_columns=['D', 'F'])
 
     return response
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def generate_student_report_pdf(request):
+def generate_student_report_excel(request):
     # Get query parameters for start_date, end_date, and section
     start_date_str = request.query_params.get('start_date')
     end_date_str = request.query_params.get('end_date')
     section = request.query_params.get('section', '')  # Default to empty string if not specified
 
+    # If no date is provided, use default dates
     if not start_date_str or not end_date_str:
-        return HttpResponse("Both start_date and end_date are required.", status=400)
-
-    # Parse the start and end dates
-    start_date = parse_date(start_date_str)
-    end_date = parse_date(end_date_str)
-
-    # Create a buffer to hold the PDF
-    buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=letter)
-
-    # Headers for the table
-    headers = ["Student Username", "Student Name", "Section", "Computer", "Logon Date", "Logon Time", "Logoff Time"]
-    data = [headers]
+        start_date, end_date = get_default_dates()
+    else:
+        # Parse the start and end dates
+        start_date = parse_date(start_date_str)
+        end_date = parse_date(end_date_str)
 
     # Base filter for UserLogs by date range
     filters = {
@@ -173,7 +147,10 @@ def generate_student_report_pdf(request):
     # Query UserLogs with the dynamic filters
     student_logs = UserLog.objects.filter(**filters).select_related('student', 'computer', 'student__section')
 
+    student_logs = student_logs.order_by('-date', '-logonTime')  # Ordering by date and logonTime in descending order
+
     # Prepare data for the report
+    data = []
     for log in student_logs:
         row = [
             log.student.username,
@@ -186,88 +163,105 @@ def generate_student_report_pdf(request):
         ]
         data.append(row)
 
-    # Create the title and include the section information
-    styles = getSampleStyleSheet()
-    title_style = styles['Heading1']
+    # Convert data to DataFrame
+    df = pd.DataFrame(data, columns=["Student Username", "Student Name", "Section", "Computer", "Logon Date", "Logon Time", "Logoff Time"])
 
-    # Title including section
-    title = Paragraph(f"Student Computer Log Report<br/>Section: {section.capitalize() if section else 'All Sections'}", title_style)
+    # Create an HTTP response with the Excel file
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = f'attachment; filename=student_report_{start_date}_{end_date}.xlsx'
 
-    # Format date range to display in the title
-    date_range_str = f"From {start_date.strftime('%B %d, %Y')} to {end_date.strftime('%B %d, %Y')}"
+    # Write the DataFrame to the Excel file
+    with pd.ExcelWriter(response, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False, sheet_name='Student Log Report')
 
-    # Add a paragraph with the date range
-    date_range_paragraph = Paragraph(f"<strong>Date Range:</strong> {date_range_str}", styles['Normal'])
+        # Get the sheet
+        sheet = writer.sheets['Student Log Report']
+        
+        # Set column widths
+        set_column_widths(sheet, df)
 
-    # Add some space (empty paragraphs) before the table
-    space = Spacer(1, 20)  # Empty paragraph for space
-    space2 = Spacer(1, 10)  # Extra empty paragraph for more space
+        # Apply formatting to headers
+        format_headers(sheet)
 
-    # Add title, date range, and space before table
-    table = Table(data)
+        # Apply borders to all cells
+        apply_borders(sheet)
 
-    # Apply table styles
-    table.setStyle(TableStyle([ 
-        ('BACKGROUND', (0, 0), (-1, 0), HexColor('#75bdc3')),  
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),  
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),  
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'), 
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),  
-        ('BACKGROUND', (0, 1), (-1, -1), HexColor('#e0f2ff')), 
-        ('GRID', (0, 0), (-1, -1), 1, colors.black),  
-        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'), 
-        ('FONTSIZE', (0, 1), (-1, -1), 10),  
-    ]))
-
-    # Build the PDF with title, date range, and the table
-    doc.build([title, date_range_paragraph, space, space2, table])
-
-    buffer.seek(0)
-    response = HttpResponse(buffer, content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename=student_report_{start_date}_{end_date}.pdf'
+        # Format date columns (Log on Date and Log off Time)
+        format_dates(sheet, date_columns=['E', 'F'])
 
     return response
 
-# @api_view(['GET'])
-# @permission_classes([IsAuthenticated])
-# def generate_student_report_excel(request):
-#     period = request.query_params.get('period', 'daily')  # Default to daily if not specified
-#     start_date, end_date = get_date_range(period)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def generate_combined_report_excel(request):
+    # Get query parameters for start_date, end_date, and section
+    start_date_str = request.query_params.get('start_date')
+    end_date_str = request.query_params.get('end_date')
 
-#     # Query UserLogs for students within the specified date range
-#     student_logs = UserLog.objects.filter(student__isnull=False, date__range=[start_date, end_date]).select_related('student', 'computer', 'student__section')
+    # If no date is provided, use default dates
+    if not start_date_str or not end_date_str:
+        start_date, end_date = get_default_dates()
+    else:
+        # Parse the start and end dates
+        start_date = parse_date(start_date_str)
+        end_date = parse_date(end_date_str)
 
-#     # Prepare data for the report
-#     report_data = []
-#     for log in student_logs:
-#         report_data.append({
-#             "Student Username": log.student.username,
-#             "Student Name": f"{log.student.first_name} {log.student.last_name}",
-#             "Section": log.student.section.name if log.student.section else 'N/A',
-#             "Computer Name": log.computer.computer_name if log.computer else None,
-#             "Logon Date": log.date,
-#             "Logon Time": log.logonTime,
-#             "Logoff Time": log.logoffTime,
-#         })
+    # Filter both Faculty and Student logs within the given date range
+    user_logs = UserLog.objects.filter(
+        date__range=[start_date, end_date]  # Filter by date range
+    ).select_related('faculty', 'student', 'computer')
 
-#     # Create a pandas DataFrame
-#     df = pd.DataFrame(report_data)
-#     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-#     response['Content-Disposition'] = f'attachment; filename=student_report_{period}.xlsx'
+    user_logs = user_logs.order_by('-date', '-logonTime')  # Ordering by date and logonTime in descending order
 
-#     # Convert the DataFrame to Excel and write it to the response
-#     with pd.ExcelWriter(response, engine='xlsxwriter') as writer:
-#         df.to_excel(writer, index=False, sheet_name='Student Report')
-#         workbook  = writer.book
-#         worksheet = writer.sheets['Student Report']
+    # Prepare data for the combined report
+    data = []
+    for log in user_logs:
+        if log.faculty:
+            row = [
+                log.faculty.username,
+                f"{log.faculty.first_name} {log.faculty.last_name}",
+                'Faculty',
+                log.computer.computer_name if log.computer else 'N/A',
+                log.date,
+                log.logonTime,
+                log.logoffTime if log.logoffTime else 'Not yet Logged off'
+            ]
+        elif log.student:
+            row = [
+                log.student.username,
+                f"{log.student.first_name} {log.student.last_name}",
+                'Student',
+                log.computer.computer_name if log.computer else 'N/A',
+                log.date,
+                log.logonTime,
+                log.logoffTime if log.logoffTime else 'Not yet Logged off'
+            ]
+        data.append(row)
 
-#         # Adjust column width based on max length of content
-#         for idx, col in enumerate(df.columns):
-#             max_len = df[col].astype(str).map(len).max()
-#             max_len = max(max_len, len(col))
-#             worksheet.set_column(idx, idx, max_len + 2)
+    # Convert data to DataFrame
+    df = pd.DataFrame(data, columns=["Username", "Name", "Role", "Computer", "Logon Date", "Logon Time", "Logoff Time"])
 
-#         worksheet.set_column('D:D', 12, workbook.add_format({'num_format': 'hh:mm:ss AM/PM'}))
-#         worksheet.set_column('E:E', 12, workbook.add_format({'num_format': 'hh:mm:ss AM/PM'}))
+    # Create an HTTP response with the Excel file
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=combined_report.xlsx'
 
-#     return response
+    # Write the DataFrame to the Excel file
+    with pd.ExcelWriter(response, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False, sheet_name='Combined Log Report')
+
+        # Get the sheet
+        sheet = writer.sheets['Combined Log Report']
+        
+        # Set column widths
+        set_column_widths(sheet, df)
+
+        # Apply formatting to headers
+        format_headers(sheet)
+
+        # Apply borders to all cells
+        apply_borders(sheet)
+
+        # Format date columns (Log on Date and Log off Time)
+        format_dates(sheet, date_columns=['E', 'F'])
+
+    return response
