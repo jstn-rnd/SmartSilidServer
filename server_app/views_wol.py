@@ -3,10 +3,11 @@ import time
 from django.http import HttpResponse
 from wakeonlan import send_magic_packet
 from django.shortcuts import render
-from .models import RFID, Computer, Scan, Student, User
+from .models import RFID, Computer, Scan, Section, Student, User
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
+from server_app.Utils.computer_utls import change_computer_name
 
 def normalize_mac(mac_address):
     """Normalize MAC address to be without hyphens and lowercase."""
@@ -53,11 +54,13 @@ def wake_computers(request):
             if student_mac:
                 print(student_mac.computer_name)
                 normalized_mac = normalize_mac(student_mac.mac_address)
-                send_magic_packet(normalized_mac)
+                value = send_magic_packet(normalized_mac)
+                print(value)
 
         return Response({"status_message" : f"Sent magic packets to: {', '.join(selected_computers)}"})
     
     except Exception as e:
+        print("Error")
         return Response({"status_message" : f"Failed to send magic packets: {str(e)}"})
 
    
@@ -168,7 +171,7 @@ def set_computer_admin(request):
     })
 
 @api_view(['POST'])
-# @permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def bind_computer(request): 
     computer = request.data.get('computer')
     username = request.data.get('username', None)
@@ -227,68 +230,143 @@ def bind_computer(request):
     }) 
 
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def assign_all_computer(request): 
+    section_name = request.data.get("section_name")
 
-# def shutdown_computers(request):
-#     if request.method == 'POST':
-#         computers = request.POST.getlist('computers')
-#         if not computers:
-#             return HttpResponse("No computers selected.", status=400)
-        
-#         failed_computers = []
-        
-#         for computer in computers:
-#             student_mac = Computer.objects.filter(computer_name=computer).first()
-#             if not student_mac:
-#                 failed_computers.append((computer, "MAC address not found"))
-#                 continue
-            
-#             original_mac_address = student_mac.mac_address
-#             ip_address = get_ip_from_mac(original_mac_address)
-#             if not ip_address:
-#                 failed_computers.append((computer, f"IP address not found for MAC address {original_mac_address}"))
-#                 continue
-            
-#             try:
-#                 # Log the command for debugging
-#                 command = ['shutdown', '/s', '/f', '/t', '0', '/m', f'\\\\{ip_address}']
-#                 print(f"Executing command: {' '.join(command)}")
-#                 result = subprocess.run(command, capture_output=True, text=True, shell=True)
-                
-#                 # Capture and log output and errors
-#                 if result.returncode != 0:
-#                     failed_computers.append((computer, f"Failed to execute command. Error: {result.stderr.strip()}"))
-#                 else:
-#                     print(f"Shutdown command output: {result.stdout.strip()}")
-                
-#             except Exception as e:
-#                 failed_computers.append((computer, f"Exception occurred: {str(e)}"))
-        
-#         if failed_computers:
-#             error_messages = "\n".join([f"Failed to shutdown {comp} (MAC: {Computer.objects.filter(computer_name=comp).first().mac_address}): {err}" for comp, err in failed_computers])
-#             return HttpResponse(f"Some shutdown commands failed:\n{error_messages}", status=500)
-        
-#         return HttpResponse("Shutdown commands sent successfully.")
+    if not section_name : 
+        return Response({
+            "status_message" : "Invalid or missing input"
+        })
     
-#     return render(request, 'server_app/shutdown_computers.html', {'computers': Computer.objects.values_list('computer_name', flat=True)})
+    section = Section.objects.filter(name = section_name).first()
+
+    if not section : 
+        return Response({
+            "status_message" : "Section not found"
+        })
+
+    students = Student.objects.filter(section=section)
+    
+    scans_list = []
+    for student in students:
+        scan = Scan.objects.filter(student = student).first()
+
+        if scan : 
+            scans_list.append(scan)
+
+    all_computers = Computer.objects.all().order_by('computer_name') 
+
+    used_computers = []
+    for scan in scans_list:
+        if scan.computer not in used_computers:
+            used_computers.append(scan.computer)
+
+    
+
+    available_computers = []
+    for computer in all_computers:
+        if computer not in used_computers:
+            available_computers.append(computer)
+
+    counter = 0
+    for student in students : 
+        scan = Scan.objects.filter(student = student).first()
+        if not scan: 
+            scan = Scan(
+                student = student
+            )
+            scan.save()
+        if not scan.computer: 
+            try : 
+                scan.computer = available_computers[counter]
+                scan.save()
+                counter += 1 
+            except IndexError : 
+                return Response({
+                    "status_message" : "Students are greater than the number of computers, some students did not get assigned computers"
+                })
+    
+    return Response({
+        "status_message" : "Computers has been assigned successfully"
+    })
 
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def unassign_all_computer(request): 
+    section_name = request.data.get("section_name")
 
-# def select_and_wake_computers(request):
-#     if request.method == 'POST':
-#         selected_computers = request.POST.getlist('computers')
+    if not section_name: 
+        return Response({
+            "status_message": "Invalid or missing input"
+        })
+    
+    section = Section.objects.filter(name=section_name).first()
+    
+    if not section: 
+        return Response({
+            "status_message": "Section not found"
+        })
+
+    students = Student.objects.filter(section=section)
+
+    for student in students:
+        scan = Scan.objects.filter(student=student).first()
+        if scan and scan.computer:
+            scan.computer = None
+            scan.save()
+
+    return Response({
+        "status_message": "All computers have been successfully unassigned for the section."
+    })
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def change_computer_status(request):
+    status = request.data.get("status")
+    computer_name = request.data.get("computerName")
+    mac_address = request.data.get("macAddress")
+
+    if not computer_name or mac_address or status: 
+        return Response({
+            "status" : "Missing or invalid input"
+        })
+    
+    if status != 1 and status != 0: 
+        return Response({
+            "status" : "Missing or invalid input"
+        })
+
+    computer = change_computer_name()
+    computer.status = status
+
+    return Response({
+        "status_message" : "Computer status have been updated successfully"
+    })
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def delete_computers(request): 
+    computers = request.data.get("computers")
+    print(computers)
+
+    if type(computers) != list: 
+        return Response({
+            "status" : 0,
+            "status_message" : "Missing or invalid input"
+        })
+    
+    for computer in computers : 
+        computer_object = Computer.objects.filter(computer_name = computer).first()
         
-#         if len(selected_computers) < 1:
-#             return HttpResponse("Please select at least 1 computer.", status=400)
-        
-#         try:
-#             for computer in selected_computers:
-#                 student_mac = Computer.objects.filter(computer_name=computer).first()
-#                 if student_mac:
-#                     normalized_mac = normalize_mac(student_mac.mac_address)
-#                     send_magic_packet(normalized_mac)
-#             return HttpResponse(f"Sent magic packets to: {', '.join(selected_computers)}")
-#         except Exception as e:
-#             return HttpResponse(f"Failed to send magic packets: {str(e)}", status=500)
-
-#     return render(request, 'server_app/select_and_wake.html', {'computers': Computer.objects.values_list('computer_name', flat=True)})
-
+        if computer_object:
+            computer_object.delete()
+    
+    return Response({
+        "status" : 1, 
+        "status_message" : "Computer successfully deleted" 
+    })

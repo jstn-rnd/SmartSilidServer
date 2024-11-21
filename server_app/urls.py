@@ -54,7 +54,10 @@ urlpatterns = [
     path('get_all_computers', views_wol.get_all_computers, name = "get_all_computers"),
     path('set_computer_admin', views_wol.set_computer_admin, name = 'set_computer_admin'), 
     path('bind_computer', views_wol.bind_computer),
-
+    path("change_computer_status", views_wol.change_computer_status),
+    path("delete_computers", views_wol.delete_computers),
+    path("assign_all_computers", views_wol.assign_all_computer),
+    path("unassign_all_computers", views_wol.unassign_all_computer),
     # Add paths for stream control
     # path('stream/status/', views_stream.stream_status, name='stream_status'),
     path('stream/start/', views_stream.start_stream, name='start_stream'),
@@ -72,8 +75,8 @@ urlpatterns = [
     path('add_section', views_section.add_section, name = "add_section"),
     path('delete_section', views_section.delete_section, name = "delete_section"),
     path('get_all_sections', views_section.get_all_sections, name = "get_all_sections"),
-    #Input blocking
     
+    #Input blocking
     path('get_url_block', views_blocked.get_url_block, name = "get_url_block"),
     path("add_url_block", views_blocked.add_url_block, name = "add_url_block"),
     path("delete_url_block", views_blocked.delete_url_block, name = "delete_url_block"),
@@ -86,11 +89,15 @@ urlpatterns = [
 
     path('upload_students', views_batch.upload_students_batch, name = 'upload_students'),
     path('upload_faculty', views_batch.upload_faculty_batch, name = 'upload_faculty'),
+    
     #attendace
     path("get_attendance_info", views_rfid.get_attendance_info),
 
     #semester 
     path("start_semester", views_schedule.start_semester), 
+    path("end_semester", views_schedule.end_semester), 
+    path("get_past_semesters", views_schedule.get_past_semesters),
+    path("get_schedule_by_semester", views_schedule.get_schedule_by_semester),
 
     path('faculty-report/excel/', views_reports.generate_faculty_report_excel, name='faculty_report_excel'),
     path('student-report/excel/', views_reports.generate_student_report_excel, name='student_report_excel'),

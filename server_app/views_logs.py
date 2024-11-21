@@ -1,4 +1,4 @@
-from .models import User, Computer, UserLog, Student
+from .models import Section, User, Computer, UserLog, Student
 from django.http import HttpResponse
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -9,6 +9,8 @@ from datetime import datetime
 from django.utils.dateparse import parse_date
 from datetime import date
 import math
+from .utils import format_fullname
+from .Utils.computer_utls import change_computer_name
 
 @api_view(['POST'])
 def add_user_logon(request): 
@@ -16,37 +18,8 @@ def add_user_logon(request):
     computer_name = request.data.get("computerName")
     mac_address = request.data.get("macAddress")
 
-    name_mac_match = Computer.objects.filter(computer_name = computer_name, mac_address = mac_address).first()
-    mac_found = Computer.objects.filter(mac_address = mac_address).first()
-    computer = " "
-
-    if not name_mac_match: 
-        if mac_found: 
-            mac_found.computer_name = computer_name
-            mac_found.status = 1
-            mac_found.save()
-            computer = mac_found
-        else :
-            print(f"2 : {mac_address}")
-
-            newComputer = Computer(
-                computer_name = computer_name, 
-                mac_address = mac_address, 
-                status = 1, 
-            )
-
-            if newComputer: 
-                newComputer.save()
-                computer = Computer.objects.filter(computer_name = computer_name).first()
-
-    else : 
-        name_mac_match.status = 1
-        name_mac_match.save()
-        computer = name_mac_match
-
-
-    student = Student.objects.filter(username__iexact = username).first()
-
+    computer = change_computer_name(computer_name, mac_address)
+    
     latest_log_on_computer = UserLog.objects.filter(computer = computer).order_by("-date", "-logonTime").first()
 
     if latest_log_on_computer:
@@ -54,10 +27,13 @@ def add_user_logon(request):
             latest_log_on_computer.logoffTime = datetime.now().time().strftime("%H:%M:%S")
             latest_log_on_computer.save()
 
+    student = Student.objects.filter(username__iexact = username).first()
+
     if student: 
         logs = UserLog(
-            student = student, 
-            computer = computer, 
+            user = format_fullname(student.first_name, student.middle_initial, student.last_name), 
+            computer = computer.computer_name, 
+            section = student.section.name,
             date = datetime.today().date(),
             logonTime = datetime.now().time().strftime("%H:%M:%S")
         )
@@ -68,8 +44,9 @@ def add_user_logon(request):
     elif not student: 
         user = User.objects.filter(username__iexact = username).first()
         logs = UserLog(
-            faculty = user, 
-            computer = computer, 
+            user = format_fullname(user.first_name, user.middle_initial, user.last_name), 
+            computer = computer.computer_name, 
+            section = "faculty",
             date = datetime.today().date(),
             logonTime = datetime.now().time().strftime("%H:%M:%S")
         )
@@ -87,48 +64,30 @@ def add_user_logoff(request):
     date = datetime.today().date()
     logoffTime = datetime.now().time().strftime("%H:%M:%S")
 
-    name_mac_match = Computer.objects.filter(computer_name = computer_name, mac_address = mac_address).first()
-    mac_found = Computer.objects.filter(mac_address = mac_address).first()
-    computer = " "
-    
-    if not name_mac_match: 
-        if mac_found: 
-            mac_found.computer_name = computer_name
-            mac_found.status = 0
-            mac_found.save()
-            computer = mac_found
-        else :
-            print(f"2 : {mac_address}")
+    old_computer = Computer.objects.filter(computer_name = computer_name).first
+    computer = change_computer_name(computer_name, mac_address)
 
-            newComputer = Computer(
-                computer_name = computer_name, 
-                mac_address = mac_address, 
-                status = 0, 
-            )
-
-            if newComputer: 
-                newComputer.save()
-                computer = Computer.objects.filter(computer_name = computer_name).first()
-
+    if old_computer == computer.computer_name:
+        computer_name = computer.computer_name
     else : 
-        name_mac_match.status = 0
-        name_mac_match.save()
-        computer = name_mac_match
+        computer_name = old_computer
     
     student = Student.objects.filter(username = username).first()
 
     if student: 
         latest_user_log = UserLog.objects.filter(
-            student = student, 
-            computer = computer, 
+            user = format_fullname(student.first_name, student.middle_initial, student.last_name),  
+            computer = computer_name, 
+            section = student.section.name,
             date = date, 
             logoffTime__isnull=True).order_by("-date", "-logonTime").first()
 
     elif not student: 
         user = User.objects.filter(username = username).first()
         latest_user_log = UserLog.objects.filter(
-            faculty = user, 
-            computer = computer, 
+            user = format_fullname(user.first_name, user.middle_initial, user.last_name),  
+            computer = computer_name, 
+            section = "faculty",
             date = date, 
             logoffTime__isnull=True).order_by("-date", "-logonTime").first()
     
@@ -149,7 +108,7 @@ def get_logs_computer(request):
     pagination = request.data.get("pagination", None)
     start_date = request.data.get("start_date", None)
     end_date = request.data.get("end_date", None)
-    username = request.data.get("username", None)
+    fullname = request.data.get("fullname", None)
     user_type = request.data.get("type", None)  # 'faculty' or 'student'
     computer_name = request.data.get("computer_name", None)
     section = request.data.get("section", None)
@@ -175,33 +134,25 @@ def get_logs_computer(request):
     logs = []
     items = int(pagination * 50)
 
-    # Initialize the query with the date range
     logs = UserLog.objects.filter(date__range=(start_date_params, end_date_params))
 
-    # Apply the username filter if provided
-    if username:
-        faculty_logs = logs.filter(faculty__username__icontains = username)
-        user_logs = logs.filter(student__username__icontains = username)
-        logs = faculty_logs | user_logs
+    if fullname:
+        logs = logs.filter(user__icontains = fullname)
 
-    # Apply the user_type filter if provided
     if user_type == 'faculty':
-        logs = logs.filter(faculty__isnull=False)  # Only include logs where faculty is not null
-    elif user_type == 'student':
-    # If section is provided, filter by section
-        if section:
-            logs = logs.filter(student__isnull=False, student__section__name=section)
-        else:
-        # If section is not provided, just filter by student
-            logs = logs.filter(student__isnull=False)
-    # Apply the computer_name filter if provided
+        logs = logs.filter(section="faculty") 
+
+    if user_type == 'student':
+        logs = logs.exclude(section="faculty") 
+
+    if section:       
+        logs = logs.filter(section=section)
+    
     if computer_name:
-        logs = logs.filter(computer__computer_name=computer_name)
+        logs = logs.filter(computer=computer_name)
 
-    # Pagination: Limit results and apply sorting
-    logs = logs.select_related('faculty', 'student', 'computer').order_by("-date", "-logonTime")[:items*2]
+    logs = logs.order_by("-date", "-logonTime")[:items*2]
 
-    # Pagination exclusion logic
     if pagination > 1:
         excluded = items - 1 - 50
     else:
@@ -210,26 +161,16 @@ def get_logs_computer(request):
     json_response = []
     for i in range(items):
         if i > excluded and i < len(logs):
-            if logs[i].faculty:
-                data = {
-                    "id": logs[i].id,
-                    "computer_name": logs[i].computer.computer_name,
-                    "username": logs[i].faculty.username,
-                    "section" : "faculty",
-                    "date": logs[i].date,
-                    "logon": logs[i].logonTime,
-                    "logoff": logs[i].logoffTime
-                }
-            elif logs[i].student:
-                data = {
-                    "id": logs[i].id,
-                    "computer_name": logs[i].computer.computer_name,
-                    "username": logs[i].student.username,
-                    "section" : logs[i].student.section.name,
-                    "date": logs[i].date,
-                    "logon": logs[i].logonTime,
-                    "logoff": logs[i].logoffTime
-                }
+            data = {
+                "id": logs[i].id,
+                "computer_name": logs[i].computer,
+                "username": logs[i].user,
+                "section" : logs[i].section,
+                "date": logs[i].date,
+                "logon": logs[i].logonTime,
+                "logoff": logs[i].logoffTime
+            }
+        
             json_response.append(data)
 
     length = len(logs)

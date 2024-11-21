@@ -39,9 +39,9 @@ class Semester(models.Model):
 
 class UserLog(models.Model): 
     id = models.AutoField(primary_key=True)
-    faculty = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='UserLogs')
-    student = models.ForeignKey(Student, on_delete=models.CASCADE, null=True, blank=True, related_name='UserLogs')
-    computer = models.ForeignKey(Computer, on_delete=models.CASCADE, related_name='UserLogs', default = 0)
+    user = models.CharField(max_length=255, null= True, blank= True)
+    computer = models.CharField(max_length=255, null= True, blank= True)
+    section = models.CharField(max_length=255, null= True, blank= True)
     date = models.DateField()
     logonTime = models.TimeField(null = True, blank = True)
     logoffTime = models.TimeField(null = True, blank = True)
@@ -107,4 +107,12 @@ class Scan(models.Model):
     computer = models.ForeignKey(Computer, null=True, on_delete=models.SET_NULL, blank=True, related_name="Scans")
     rfid = models.ForeignKey(RFID, null=True, blank=True, on_delete=models.SET_NULL, related_name="scans")
     
+    def delete(self, *args, **kwargs):
+        # Delete the parent before deleting the child
+        if self.rfid:
+            self.rfid.delete()
+        
+        if self.student: 
+            self.student.delete()
+        super().delete(*args, **kwargs)
 

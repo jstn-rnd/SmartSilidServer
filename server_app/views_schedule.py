@@ -5,12 +5,13 @@ from rest_framework.permissions import IsAuthenticated
 from datetime import datetime, time, timedelta
 from django.utils.dateparse import parse_date
 from server_app.Utils.schedule_utils import check_if_time_is_valid, check_schedule_overlap, start_is_not_greater_than_end, check_schedule_overlap_with_specific_schedule
+from .utils import format_fullname
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def add_schedule(request): 
     
-    semester = request.data.get("semester")
+    semester = request.data.get("semester_name")
     subject = request.data.get("subject")
     section = request.data.get("section")
     start_time = request.data.get("start_time")
@@ -18,12 +19,12 @@ def add_schedule(request):
     weekdays = request.data.get("weekdays")
     faculty = request.data.get("faculty_name")
 
-    print(subject)
-    print(section)
-    print(start_time)
-    print(end_time)
-    print(weekdays)
-    print(faculty)
+    semester = Semester.objects.filter(name = semester).first()
+
+    if not semester : 
+        return Response({
+            "status_message" : "Semester not found" 
+        })
 
     faculty_object = User.objects.filter(username = faculty).first()
     section_object = Section.objects.filter(name = section).first()
@@ -48,7 +49,8 @@ def add_schedule(request):
                     section = section_object, 
                     weekdays = weekdays, 
                     start_time = start_time_format, 
-                    end_time = end_time_format
+                    end_time = end_time_format, 
+                    semester = semester
                 )
                 schedule.save()
                 print(1)
@@ -283,3 +285,68 @@ def end_semester(request):
     })
     
     
+
+@api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+def get_past_semesters(request): 
+
+    semesters = Semester.objects.filter(isActive = False)
+
+    response_json = []
+    for semester in semesters: 
+        data = {
+            "semester_id" : semester.id, 
+            "semester_name" : semester.name
+        }
+        response_json.append(data)
+
+    return Response({
+        "status" : 1, 
+        "status_message" : "Past semester has been obtained successfully", 
+        "past_semester" : response_json
+        })    
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def get_schedule_by_semester(request):
+    semester_id = request.data.get("semester_id")
+
+    if not semester_id: 
+        return Response({
+            "status" : 0, 
+            "status_message" : "Missing or invalid input"
+        })
+
+    semester = Semester.objects.filter(id = semester_id).first()
+
+    if not semester : 
+        return Response({
+            "status" : 0, 
+            "status_message" : "Semester has not been found"
+        })
+    
+    schedules = Schedule.objects.filter(semester = semester)
+
+    response_json = []
+
+    for schedule in schedules: 
+        data = {
+            'id' : schedule.id,
+            'subject' : schedule.subject,
+            'section' : schedule.section.name,
+            'start_time' : schedule.start_time,
+            'end_time' : schedule.end_time,
+            'weekdays' : schedule.weekdays,
+            'faculty' : schedule.faculty.username,
+        }
+
+        response_json.append(data)
+    
+    if semester :
+        return Response({
+            "status" : 1,
+            "status_message" : "Schedules has been obtained successfully", 
+            "semester" : semester.name, 
+            "schedules" : response_json
+        })

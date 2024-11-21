@@ -14,7 +14,7 @@ from django.views.decorators.csrf import csrf_exempt
 from wakeonlan import send_magic_packet
 
 from server_app.views_wol import get_ip_from_mac, normalize_mac
-from .models import Computer, Schedule, RfidLogs, ClassInstance, Attendance, User, RFID, User, Scan, Student
+from .models import Computer, Semester, Schedule, RfidLogs, ClassInstance, Attendance, User, RFID, User, Scan, Student
 from .forms import ScheduleForm
 
 from rest_framework.response import Response
@@ -26,50 +26,6 @@ from datetime import date
 import math
 import datetime
 
-
-
-# @csrf_exempt
-# def check_rfid(request):
-    
-#     if request.method == 'POST':
-#         RFID_input = request.POST.get('RFID')
-#         print(RFID_input)
-
-#         if RFID_input:
-#             # Update the RFID approval status based on the schedule before checking
-#             schedules = Schedule.objects.all()
-#             for schedule in schedules:
-#                 update_rfids_approval(schedule)  # Refresh approval statuses based on the schedule
-
-#             try:
-#                 # Check if RFID exists
-#                 record = RFID.objects.get(RFID=RFID_input)
-#                 response = {
-#                     "status": "success",
-#                     "message": "RFID exists",
-#                     "ID": record.id,
-#                     "RFID": record.RFID,
-#                     "Approve": record.approved  # This will be based on the latest schedule check or manual update
-#                 }
-                
-               
-#             except RFID.DoesNotExist:
-#                 # RFID does not exist, insert into database
-#                 record = RFID.objects.create(RFID=RFID_input, approved=0)  # Default to 0 (denied)
-#                 response = {
-#                     "status": "success",
-#                     "message": "RFID added successfully",
-#                     "ID": record.id,
-#                     "RFID": record.RFID,
-#                     "Approve": record.approved
-#                 }
-
-#         else:
-#             response = {"status": "error", "message": "No RFID received from ESP32"}
-
-#         return JsonResponse(response)
-#     else:
-#         return JsonResponse({"status": "error", "message": "Invalid request method"})
 
 
 def view_records(request):
@@ -210,12 +166,15 @@ def check_rfid(request):
 
             return Response(response)
         
-        
-        schedule = Schedule.objects.filter(
-            start_time__lte=current_time,  
-            end_time__gte=current_time,   
-            weekdays__icontains=current_weekday_code  
-        ).first()
+        semester = Semester.objects.filter(isActive = True).first()
+
+        if semester : 
+            schedule = Schedule.objects.filter(
+                start_time__lte=current_time,  
+                end_time__gte=current_time,   
+                weekdays__icontains=current_weekday_code, 
+                semester = semester  
+            ).first()
 
         if schedule : 
             print(10)
@@ -500,7 +459,7 @@ def delete_rfid(request):
 
 
 @api_view(['POST'])
-# @permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def get_attendance_info(request): 
     schedule_id = request.data.get("schedule_id")
 
@@ -581,4 +540,6 @@ def get_attendance_info(request):
     })
 
 
-            
+
+
+    

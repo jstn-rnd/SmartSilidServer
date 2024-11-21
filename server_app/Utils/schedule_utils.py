@@ -11,7 +11,7 @@ def check_if_time_is_valid(start, end):
     return False
 
 def check_schedule_overlap(day, start, end):
-    schedules = Schedule.objects.filter(weekdays=day)
+    schedules = Schedule.objects.filter(weekdays=day, semester__isActive = True)
 
     for schedule in schedules:
         if start < schedule.end_time and end > schedule.start_time:
@@ -23,7 +23,7 @@ def start_is_not_greater_than_end(start, end):
     return end > start
 
 def check_schedule_overlap_with_specific_schedule(day, start, end, sched_id): 
-    schedules = Schedule.objects.filter(weekdays=day)
+    schedules = Schedule.objects.filter(weekdays=day, semester__isActive = True)
 
     for schedule in schedules: 
         if schedule.id != sched_id and (start < schedule.end_time and end > schedule.start_time):
