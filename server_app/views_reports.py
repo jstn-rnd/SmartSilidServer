@@ -70,20 +70,18 @@ def generate_faculty_report_excel(request):
 
     # Filter UserLogs for faculty within the given date range
     user_logs = UserLog.objects.filter(
-        faculty__isnull=False,  # Only include faculty logs
+        section = "faculty",  # Only include faculty logs
         date__range=[start_date, end_date]  # Filter by the date range
-    ).select_related('faculty', 'computer')
+    )
 
     user_logs = user_logs.order_by('-date', '-logonTime')  # Ordering by date and logonTime in descending order
 
     # Prepare data for the report
     data = []
     for log in user_logs:
-        rfid = RFID.objects.filter(faculty=log.faculty).first()
         row = [
-            log.faculty.username,
-            f"{log.faculty.first_name} {log.faculty.last_name}",
-            log.computer.computer_name if log.computer else 'N/A',
+            log.user,
+            log.computer if log.computer else 'N/A',
             log.date,
             log.logonTime,
             log.logoffTime if log.logoffTime else 'Not yet Logged off'
@@ -91,7 +89,7 @@ def generate_faculty_report_excel(request):
         data.append(row)
 
     # Convert data to DataFrame
-    df = pd.DataFrame(data, columns=["Faculty Username", "Faculty Name", "Computer", "Log on Date", "Log on Time", "Log off Time"])
+    df = pd.DataFrame(data, columns=["Faculty Name", "Computer", "Log on Date", "Log on Time", "Log off Time"])
 
     # Create an HTTP response with the Excel file
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
