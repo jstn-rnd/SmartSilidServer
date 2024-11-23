@@ -462,38 +462,51 @@ def delete_rfid(request):
 @permission_classes([IsAuthenticated])
 def get_attendance_info(request): 
     schedule_id = request.data.get("schedule_id")
+    print(1)
 
-    if not schedule_id:
+    if not schedule_id and not isinstance(schedule_id, int):
         return Response({
             "status_message" : "Invalid or missing input"
         })
     
+    print(2)
+    
     schedule = Schedule.objects.filter(id = schedule_id).first()
+
+    print(3)
 
     if not schedule : 
         return Response({
             "status_message" : "Schedule does not exist"
         })
+    
+    print(4)
 
     
-    attendance_response = {}
+    attendance_response = []
     class_response = []
 
     section = schedule.section
 
+    print(5)
+
     classes = ClassInstance.objects.filter(schedule = schedule)
 
+    print(6)
+
     for class_object in classes : 
+        print(7)
         class_response.append(class_object.date)
-
+        print(8)
         attendances = Attendance.objects.filter(class_instance = class_object)
+        print(9)
         students = Student.objects.filter(section = section)
+        print(10)
         faculty_attendance = Attendance.objects.filter(class_instance__schedule__faculty = schedule.faculty).first()
-
+        print(10)
+        faculty = schedule.faculty
+        fullname = f"{faculty.first_name} {faculty.middle_initial}. {faculty.last_name}"
         if faculty_attendance: 
-            faculty = schedule.faculty
-            fullname = f"{faculty.first_name} {faculty.middle_initial}. {faculty.last_name}"
-
             faculty_response = {
                 "fullname" : fullname, 
                 "log_time" : faculty_attendance.scan_time, 
@@ -528,15 +541,17 @@ def get_attendance_info(request):
                 }
                 attendees.append(data)
             
-        attendance_response = {
+        attendance_data = {
             "date" : class_object.date, 
             "faculty" : faculty_response, 
             "attendees" : attendees
         }
 
+        attendance_response.append(attendance_data)
+
     return Response({
         "date" : class_response,
-        "attendace" : attendance_response
+        "attendance" : attendance_response
     })
 
 
