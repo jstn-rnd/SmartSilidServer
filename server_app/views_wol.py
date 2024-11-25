@@ -247,7 +247,7 @@ def assign_all_computer(request):
             "status_message" : "Section not found"
         })
 
-    students = Student.objects.filter(section=section)
+    students = Student.objects.filter(section=section).order_by('lastname', 'firstname', 'middle_initial')
     
     scans_list = []
     for student in students:
@@ -324,24 +324,30 @@ def unassign_all_computer(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
 def change_computer_status(request):
     status = request.data.get("status")
     computer_name = request.data.get("computerName")
     mac_address = request.data.get("macAddress")
 
-    if not computer_name or mac_address or status: 
+    print(status)
+    print(computer_name)
+    print(mac_address)
+
+    if not computer_name or not mac_address or status == None: 
+        print("may mali")
         return Response({
             "status" : "Missing or invalid input"
         })
     
     if status != 1 and status != 0: 
+        print(2)
         return Response({
             "status" : "Missing or invalid input"
         })
 
-    computer = change_computer_name()
+    computer = change_computer_name(computer_name, mac_address)
     computer.status = status
+    computer.save()
 
     return Response({
         "status_message" : "Computer status have been updated successfully"

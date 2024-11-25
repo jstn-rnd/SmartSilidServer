@@ -53,12 +53,10 @@ def add_schedule(request):
                     semester = semester
                 )
                 schedule.save()
-                print(1)
                 return Response({
                     "status_message" : "Schedule succesfully added"
                 })
             
-            print(2)
             return Response({
                 "status_message" : "Time may be invalid or overlaps on another schedule"
             })
@@ -97,6 +95,8 @@ def get_all_schedule(request):
 
     json_response = []
     for schedule in sorted_objects:
+        faculty = schedule.faculty
+        fullname = format_fullname(faculty.first_name, faculty.middle_initial, faculty.last_name)
         data = {
             'id' : schedule.id,
             'subject' : schedule.subject,
@@ -104,7 +104,7 @@ def get_all_schedule(request):
             'start_time' : schedule.start_time,
             'end_time' : schedule.end_time,
             'weekdays' : schedule.weekdays,
-            'faculty' : schedule.faculty.username,
+            'faculty' : fullname,
         }
 
         json_response.append(data)
@@ -113,6 +113,7 @@ def get_all_schedule(request):
         "status" : 1,
         "status_message" : "Schedule has been obtained successfully",
         "current_semester" : active_semester.name, 
+        "current_semester_id" : active_semester.id,
         "schedule" : json_response
        })
 
@@ -163,11 +164,12 @@ def update_schedule(request):
 
             overlap = check_schedule_overlap_with_specific_schedule(schedule.weekdays, start, end, id)
             valid = check_if_time_is_valid(start=start, end=end)
+            end_is_greater_than_start = start_is_not_greater_than_end(start, end)
             print("\nSTARTTIME")
             print(f"Nag ooverlap : {overlap}")
             print(f"Valid ba : {valid}\n")
 
-            if not overlap and valid: 
+            if not overlap and valid and end_is_greater_than_start: 
                 schedule.start_time = start
             
             else : 
@@ -185,8 +187,9 @@ def update_schedule(request):
             
             overlap = check_schedule_overlap_with_specific_schedule(schedule.weekdays, start, end, id)
             valid = check_if_time_is_valid(start=start, end=end)
+            end_is_greater_than_start = start_is_not_greater_than_end(start, end)
 
-            if not overlap and valid: 
+            if not overlap and valid and end_is_greater_than_start: 
                 schedule.end_time = end
             
             else : 
@@ -340,7 +343,6 @@ def get_schedule_by_semester(request):
             'weekdays' : schedule.weekdays,
             'faculty' : schedule.faculty.username,
         }
-
         response_json.append(data)
     
     if semester :
@@ -348,5 +350,6 @@ def get_schedule_by_semester(request):
             "status" : 1,
             "status_message" : "Schedules has been obtained successfully", 
             "semester" : semester.name, 
+            "semester_id" : semester.id, 
             "schedules" : response_json
         })

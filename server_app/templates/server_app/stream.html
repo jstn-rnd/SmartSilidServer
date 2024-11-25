@@ -62,31 +62,117 @@
             window.location.href = '/stream/?token=' + enteredToken;
         }
     </script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+    <style>
+        .stream-container {
+            font-family: 'Poppins', sans-serif;
+            width: 80%; /* Adjust width as needed */
+            margin: 0 auto; /* Centers the container horizontally */
+            padding: 20px;
+            background-color: #f4f4f4; /* Light gray background color */
+            border-radius: 8px; /* Optional: Adds rounded corners */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: Adds subtle shadow */
+            margin-top: 20px;
+            
+            h1 {
+                text-align: center;
+                font-size: 2em;
+                color: #75bdc3;
+                text-shadow: 1px 1px 7px rgba(0, 0, 0, 0.4);
+            }
+
+            #token-container {
+                width: 100%;
+                text-align: center;
+
+                #token-form {
+                    display: flex;
+                    text-align: center;
+                    justify-content: center;
+                    align-items: center;
+                    margin-top: 20px;
+                    flex-wrap: wrap; /* Corrected from 'flex: wrap' */
+                    gap: 10px;
+
+                    @media screen and (max-width: 450px) {
+                        flex-direction: column; /* Stacks elements vertically on smaller screens */
+                    }
+
+
+                    #token-input {
+                        padding: 8px;
+                        font-size: 1em;
+                        width: 200px; /* Adjust input width as needed */
+                        margin-right: 10px;
+                        border: 1px solid #ccc;
+                        border-radius: 4px;
+                    }
+
+                    button {
+                        padding: 8px 16px;
+                        font-size: 1em;
+                        background-color: #007bff;
+                        color: white;
+                        border: none;
+                        cursor: pointer;
+                        border-radius: 4px;
+                        transition: 0.3s ease-in-out;
+
+                        &:hover {
+                            background-color: #0056b3;
+                        }
+                    }
+                }
+
+                p {
+                    font-size: 1em;
+                    color: red;
+                    margin-top: 10px;
+                }
+            }
+
+            p {
+                text-align: right;
+                a {
+                    text-decoration: none;
+                    color: #007bff;
+                    transition: 0.3s ease-in-out;
+                    cursor: pointer;
+                    
+                    &:hover {
+                        color: #0056b3;
+                    }
+                }
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>Server Screen Stream</h1>
+    <div class="stream-container">
+        <h1>Screen Stream</h1>
 
-    <!-- Token Input Form (Only shown if token is not entered or invalid) -->
-    <div id="token-container">
-        <h2>Enter Token to View Stream</h2>
-        <form id="token-form" method="post" onsubmit="event.preventDefault(); submitTokenForm();">
-            {% csrf_token %}
-            <input type="text" id="token-input" name="token" placeholder="Enter token here" />
-            <button type="submit">Submit Token</button>
-        </form>
+        <!-- Token Input Form (Only shown if token is not entered or invalid) -->
+        <div id="token-container">
+            <h2>Enter Token to View Stream</h2>
+            <form id="token-form" method="post" onsubmit="event.preventDefault(); submitTokenForm();">
+                {% csrf_token %}
+                <input type="text" id="token-input" name="token" placeholder="Enter token here" />
+                <button type="submit">Submit Token</button>
+            </form>
 
-        <!-- Display error if the token is invalid -->
-        {% if token_error %}
-            <p style="color: red;">Invalid token. Please try again.</p>
-        {% endif %}
+            <!-- Display error if the token is invalid -->
+            {% if token_error %}
+                <p style="color: red;">Invalid token. Please try again.</p>
+            {% endif %}
+        </div>
+        
+        <!-- Video Player (Initially hidden until a valid token is entered) -->
+        <video id="stream" controls autoplay style="width: 100%; height: auto; display:none;">
+            <source src="" type="multipart/x-mixed-replace">
+            Your browser does not support the video tag.
+        </video>
     </div>
-
-    <!-- Video Player (Initially hidden until a valid token is entered) -->
-    <video id="stream" controls autoplay style="width: 100%; height: auto; display:none;">
-        <source src="" type="multipart/x-mixed-replace">
-        Your browser does not support the video tag.
-    </video>
-
-    <p><a href="{% url 'control_view' %}">Go to Control Panel</a></p>
 </body>
 </html>

@@ -34,6 +34,7 @@ ALLOWED_HOSTS = [
     '192.168.10.112',
     '5009-120-28-251-222.ngrok-free.app',
     "192.168.1.10",
+    "server.smartsilid.site"
     ]
 
 SITE_HOST = '192.168.10.119'

@@ -2,6 +2,7 @@
 from django.shortcuts import render, redirect
 import pyad
 from django.http import HttpResponse
+import pyad.aduser
 from .settings import get_ad_connection
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
@@ -10,6 +11,7 @@ from .models import RFID, Computer, Scan, User, Section, Student
 from .configurations import AD_BASE_DN
 import pythoncom
 import win32com.client
+from pyad.pyadexceptions import win32Exception
 
 
 def create_user_page(request): 
@@ -32,6 +34,13 @@ def create_student(request):
             last_name = request.data.get('last_name')
             middle_initial = request.data.get("middle_initial", '')
             section = request.data.get("section", None)
+
+            print(username)
+            print(password)
+            print(first_name)
+            print(last_name)
+            print(middle_initial)
+            print(section)
         
             optional_attributes={
                 "givenName": first_name,  
@@ -39,8 +48,10 @@ def create_student(request):
                 "initials": middle_initial  
                 }
 
-            if username == None : 
-                username = first_name + "." + last_name + "." + middle_initial
+            if not username or not password or not first_name or not last_name or not middle_initial or not section : 
+                return Response({
+                    "error_message" : "Invalid or missing input"
+                    })
                   
             section_object = Section.objects.filter(name = section).first()
 
@@ -68,13 +79,34 @@ def create_student(request):
                     student = student
                 )
 
+                scan.save()
+
                 return Response({"status_message" : "User succesfully created"})
             else : 
-                return Response({"error_message" : "User does not exist"})
+                return Response({"status_message" : "Section does not exist"})
                     
-        except Exception as e:
+        except win32Exception as e: 
+            already_exist = "0x80071392" in str(e)
+            password_history_error = "0x800708c5" in str(e)
+
+            if password_history_error:
+                user = pyad.aduser.ADUser.from_cn(username)
+                user.delete()
+                error_message = "Password error! Ensure that password is not similar to username or past password"
+
+            if already_exist : 
+                error_message = " Username is already being used within the domain"
+
+            return Response({"error_message" : error_message})
+
+        except Exception as e:          
+            error_code = "0x8007202f"
+
+            if error_code in str(e): 
+                error_message = "User might already exist or password format is incorrect"
             print(f"Failed to create user: {str(e)}")
-            return Response({"error_message" : f"Failed to create user"})
+            return Response({"error_message" : error_message})
+        
 
     else:
         return Response({"error_message" : "Failed to connect to Active Directory"})
@@ -128,13 +160,25 @@ def change_password_student(request):
         try :
             section = student.section.name
             pythoncom.CoInitialize()
-            ad = win32com.client.Dispatch("ADsNameSpaces")
-            user_dn = f"CN={username},OU={section},OU=Student,OU=SmartSilid-Users,{AD_BASE_DN}"
-            user_ad_obj = ad.GetObject("", f"LDAP://{user_dn}")
-            user_ad_obj.SetPassword(value)
+            # ad = win32com.client.Dispatch("ADsNameSpaces")
+            # user_dn = f"CN={username},OU={section},OU=Student,OU=SmartSilid-Users,{AD_BASE_DN}"
+            # user_ad_obj = ad.GetObject("", f"LDAP://{user_dn}")
+            # user_ad_obj.SetPassword(value)
+
+            user = pyad.aduser.ADUser.from_cn(username)
+            user.set_password(value)
 
             return Response({"status_message" : "Student password change succesful"})
 
+        except win32Exception as e: 
+            password_history_error = "0x800708c5" in str(e)
+
+            if password_history_error:
+                error_message = "Password error! Ensure that password is not similar to username or past password"
+
+
+            return Response({"error_message" : error_message})
+        
         except Exception as e:
            
             return Response({
@@ -180,7 +224,7 @@ def move_section(request):
 
 
 @api_view(['GET'])
-# @permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def get_all_students(request):
 
     result = []
@@ -273,7 +317,7 @@ def update_student(request):
 
     if not student: 
         return Response({
-            "status_message" : "Faculty not found"
+            "status_message" : "Student not found"
         })
     
     if middle_initial and len(middle_initial) != 1 : 
@@ -284,48 +328,81 @@ def update_student(request):
         ad = win32com.client.Dispatch("ADsNameSpaces")
         student_dn = f"CN={student.username},OU={student.section.name},OU=Student,OU=SmartSilid-Users,{AD_BASE_DN}"
         student_ad_obj = ad.GetObject("", f"LDAP://{student_dn}")
-        # print(1)
-        
-        if username and username != student.username: 
-            if len(username) > 20: 
-                errors.append("Username too long")
+        print(1)
+
+
+        while(len(errors) <= 0) :
+            if username and username != student.username: 
+                if len(username) > 20: 
+                    errors.append("Username too long")
+                    break
+                    
+                already_exist = pyad.aduser.ADUser.from_cn(username)
+
+                if already_exist : 
+                    errors.append("Username already exist")
+                    break
+                
+                section_dn = f"OU={student.section.name},OU=Student,OU=SmartSilid-Users,{AD_BASE_DN}"
+                container = ad.GetObject("", f"LDAP://{section_dn}")
+                print(2)
+
+                container.MoveHere(f"LDAP://{student_dn}", f"CN={username}")
+
+                print(3)
             
-            section_dn = f"OU={student.section.name},OU=Student,OU=SmartSilid-Users,{AD_BASE_DN}"
-            container = ad.GetObject("", f"LDAP://{section_dn}")
+                student.username = username
+
+                student_dn = f"CN={student.username},OU={student.section.name},OU=Student,OU=SmartSilid-Users,{AD_BASE_DN}"
+                student_ad_obj = ad.GetObject("", f"LDAP://{student_dn}")
+
+                print(4)
+
+                student_ad_obj.sAMAccountName = username 
+                student_ad_obj.userPrincipalName = username
             
-            container.MoveHere(f"LDAP://{student_dn}", f"CN={username}")
-           
-            student.username = username
+            if first_name and first_name != student.first_name: 
+                student_ad_obj.givenName = first_name
+                student.first_name = first_name
+            
+            if last_name and last_name != student.last_name: 
+                student_ad_obj.sn = last_name
+                student.last_name = last_name
 
-            student_dn = f"CN={student.username},OU={student.section.name},OU=Student,OU=SmartSilid-Users,{AD_BASE_DN}"
-            student_ad_obj = ad.GetObject("", f"LDAP://{student_dn}")
+            if middle_initial and middle_initial != student.middle_initial and len(middle_initial) == 1 :
+                student_ad_obj.initials = middle_initial.upper()
+                student.middle_initial = middle_initial.upper()
 
-            student_ad_obj.sAMAccountName = username 
-            student_ad_obj.userPrincipalName = username
-        
-        if first_name and first_name != student.first_name: 
-            student_ad_obj.givenName = first_name
-            student.first_name = first_name
-        
-        if last_name and last_name != student.last_name: 
-            student_ad_obj.sn = last_name
-            student.last_name = last_name
-
-        if middle_initial and middle_initial != student.middle_initial and len(middle_initial) == 1 :
-            student_ad_obj.initials = middle_initial.upper()
-            student.middle_initial = middle_initial.upper()
-
-        student_ad_obj.setInfo()
-        student.save()
+            student_ad_obj.setInfo()
+            student.save()
 
         return Response({
             "status_message" : "Update is completed",
             "errors" : errors
         })
 
-    except Exception as e: 
+    except win32Exception as e: 
+        already_exist = "0x80071392" in str(e)
+        password_history_error = "0x800708c5" in str(e)
+
+        if password_history_error:
+            user = pyad.aduser.ADUser.from_cn(username)
+            user.delete()
+            error_message = "Password error! Ensure that password is not similar to username or past password"
+
+        if already_exist : 
+            error_message = " Username is already being used within the domain"
+
+        return Response({"error_message" : error_message})
+
+    except Exception as e:          
+        error_code = "0x8007202f"
+
+        if error_code in str(e): 
+            error_message = "User might already exist or password format is incorrect"
+        print(f"Failed to create user: {str(e)}")
+
         return Response({
-            "status_message" : f"Update has some errors {str(e)}",
-            "errors" : errors
-        })
+            "error_message" : str(e)
+        }) 
 

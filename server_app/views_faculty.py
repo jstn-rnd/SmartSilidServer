@@ -12,6 +12,7 @@ import win32com.client
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.hashers import check_password
+from pyad.pyadexceptions import win32Exception
 
 # Gawing pywin32 based imbes na pyad 
 @api_view(['POST'])
@@ -33,14 +34,14 @@ def create_faculty(request):
     choices = ["admin", "faculty"]
 
     if not type in choices : 
-        return Response({"status_message" : "Invalid Input"})
+        return Response({"error_message" : "Invalid Input"})
     
     if username == None : 
         username = first_name + "." + last_name + "." + middle_initial
 
     if len(username) > 20:
         return Response({
-            "status_message" : f"Username {username} is too long"
+            "error_message" : f"Username {username} is too long"
         })
 
     try: 
@@ -48,7 +49,7 @@ def create_faculty(request):
 
         if existing: 
             return Response({
-                "status_message" : "User already exists"
+                "error_message" : "User already exists"
             })
 
         faculty_db = User(
@@ -88,12 +89,26 @@ def create_faculty(request):
             return Response({"status_message" : "User succesfully created"})
         
         return Response({
-            "status_message" : "Cannot create user, error in database"
+            "error_message" : "Cannot create user, error in database"
         })
+    
+    except win32Exception as e: 
+        already_exist = "0x80071392" in str(e)
+        password_history_error = "0x800708c5" in str(e)
+
+        if password_history_error:
+            user = pyad.aduser.ADUser.from_cn(username)
+            user.delete()
+            error_message = "Password error! Ensure that password is not similar to username or past password"
+
+        if already_exist : 
+            error_message = " Username is already being used within the domain"
+
+        return Response({"error_message" : error_message})
             
     except Exception as e:
         print(str(e))
-        return Response({"status_message" : f"Error in creating user : {str(e)}"})
+        return Response({"error_message" : f"Error in creating user : {str(e)}"})
     
 
 @api_view(['POST'])

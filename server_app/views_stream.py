@@ -91,6 +91,11 @@ def generate_token():
     """Generate a 6-letter uppercase token for the stream."""
     return ''.join(random.choices(string.ascii_uppercase, k=6))
 
+# def stream_status(request):
+#     return JsonResponse({
+#         'streaming_isActive' : streaming_active,
+#     })
+
 def generate_screen_stream():
     """Generator function that yields frames for MJPEG streaming."""
     while streaming_active:

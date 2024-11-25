@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views_logs, views_rfid, views_student, views_blocked, views_wol, views_stream, views_monitoring
-from . import views_section, views_schedule, views_faculty, views_batch, views_reports, views_reports, views_reportRFID 
+from . import views_section, views_schedule, views_faculty, views_batch, views_reports, views_reports
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from . import consumers
@@ -103,9 +103,8 @@ urlpatterns = [
     path('student-report/excel/', views_reports.generate_student_report_excel, name='student_report_excel'),
     path('combined-report/excel/', views_reports.generate_combined_report_excel, name='combined_report_excel'),
 
-    path('report/faculty_rfid/', views_reportRFID.generate_faculty_rfid_report, name='generate_faculty_rfid_report'),
-    path('report/student_rfid/', views_reportRFID.generate_student_rfid_report, name='generate_student_rfid_report'),
-    path('report/combined_rfid/', views_reportRFID.generate_combined_rfid_report, name='generate_combined_rfid_report'),
-
+   #new url for rfid log generation:
+    path('rfid-report/excel/', views_reports.generate_rfid_report_excel, name='rfid_report_excel'),
+    path('attendance-report/excel/', views_reports.generate_attendance_report_excel, name='attendance_report_excel'),
 ]
 
