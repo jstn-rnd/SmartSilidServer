@@ -34,13 +34,6 @@ def create_student(request):
             last_name = request.data.get('last_name')
             middle_initial = request.data.get("middle_initial", '')
             section = request.data.get("section", None)
-
-            print(username)
-            print(password)
-            print(first_name)
-            print(last_name)
-            print(middle_initial)
-            print(section)
         
             optional_attributes={
                 "givenName": first_name,  
@@ -52,6 +45,11 @@ def create_student(request):
                 return Response({
                     "error_message" : "Invalid or missing input"
                     })
+            
+            if len(username) > 20 or len(first_name) > 30 or len(last_name) > 30 or len(middle_initial) > 30 or len(password) > 30: 
+                return Response({
+                    "error_message" : "Some inputs may be too long, please recheck it"
+                })
                   
             section_object = Section.objects.filter(name = section).first()
 
@@ -97,6 +95,7 @@ def create_student(request):
             if already_exist : 
                 error_message = " Username is already being used within the domain"
 
+            print("")
             return Response({"error_message" : error_message})
 
         except Exception as e:          
@@ -131,6 +130,11 @@ def delete_student(request):
             user_object = ad_obj.Create("user", f"CN={username}") # HIndi dito nag ccreate, niloload lang ganun
             user_object.DeleteObject(0)
 
+            scan = Scan.objects.filter(student = student).first()
+
+            if scan : 
+                scan.delete()
+
             student.delete()
 
             return Response({
@@ -154,17 +158,17 @@ def change_password_student(request):
     username = request.data.get('username')
     student = Student.objects.filter(username = username).first()
     value = request.data.get('new_password')
+
+    if len(value) > 30 :
+        return Response({
+            "error_message" : "Password is too long! Ensure that it is below 30 characters"
+        }) 
     
     if student: 
         
         try :
             section = student.section.name
             pythoncom.CoInitialize()
-            # ad = win32com.client.Dispatch("ADsNameSpaces")
-            # user_dn = f"CN={username},OU={section},OU=Student,OU=SmartSilid-Users,{AD_BASE_DN}"
-            # user_ad_obj = ad.GetObject("", f"LDAP://{user_dn}")
-            # user_ad_obj.SetPassword(value)
-
             user = pyad.aduser.ADUser.from_cn(username)
             user.set_password(value)
 
@@ -305,6 +309,8 @@ def update_student(request):
     last_name = request.data.get("last_name", None)
     middle_initial =request.data.get("middle_initial", None)
 
+    print(f"ID{id}")
+
     errors = []
 
     if not id : 
@@ -313,7 +319,8 @@ def update_student(request):
         })
     
     student = Student.objects.filter(id=id).first()
-    print(Student.username)
+    print("####################################")
+    print(student.username)
 
     if not student: 
         return Response({
@@ -330,18 +337,19 @@ def update_student(request):
         student_ad_obj = ad.GetObject("", f"LDAP://{student_dn}")
         print(1)
 
-
-        while(len(errors) <= 0) :
+        counter = 0
+        while(counter <= 0) :
             if username and username != student.username: 
                 if len(username) > 20: 
                     errors.append("Username too long")
+                    counter += 1
                     break
                     
-                already_exist = pyad.aduser.ADUser.from_cn(username)
+                # already_exist = pyad.aduser.ADUser.from_cn(username)
 
-                if already_exist : 
-                    errors.append("Username already exist")
-                    break
+                # if already_exist : 
+                #     errors.append("Username already exist")
+                #     break
                 
                 section_dn = f"OU={student.section.name},OU=Student,OU=SmartSilid-Users,{AD_BASE_DN}"
                 container = ad.GetObject("", f"LDAP://{section_dn}")
@@ -375,6 +383,7 @@ def update_student(request):
 
             student_ad_obj.setInfo()
             student.save()
+            counter += 1
 
         return Response({
             "status_message" : "Update is completed",
@@ -383,12 +392,6 @@ def update_student(request):
 
     except win32Exception as e: 
         already_exist = "0x80071392" in str(e)
-        password_history_error = "0x800708c5" in str(e)
-
-        if password_history_error:
-            user = pyad.aduser.ADUser.from_cn(username)
-            user.delete()
-            error_message = "Password error! Ensure that password is not similar to username or past password"
 
         if already_exist : 
             error_message = " Username is already being used within the domain"
@@ -397,12 +400,23 @@ def update_student(request):
 
     except Exception as e:          
         error_code = "0x8007202f"
+        password_error_code = "An invalid dn syntax has been specified"
+        input_error_code = "A constraint violation occurred"
 
         if error_code in str(e): 
             error_message = "User might already exist or password format is incorrect"
+        
+        elif password_error_code in str(e): 
+            error_message = "Error in updating username, username might already be in use within the domain"
+        
+        elif input_error_code in str(e): 
+            error_message = "Error in updating student, please recheck your input"
+
+        else :
+            error_message = str(e)
         print(f"Failed to create user: {str(e)}")
 
         return Response({
-            "error_message" : str(e)
+            "error_message" : error_message
         }) 
 

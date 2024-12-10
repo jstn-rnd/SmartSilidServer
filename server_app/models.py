@@ -76,7 +76,7 @@ class Schedule(models.Model):
     semester = models.ForeignKey(Semester, on_delete=models.CASCADE, related_name="Schedule")
 
     def __str__(self):
-        return f"{self.subject} ({self.start_time} - {self.end_time})"
+        return f"<{self.id}> {self.subject} ({self.start_time} - {self.end_time})"
 
 class BlockedURL(models.Model):
     url = models.URLField(unique=True)
@@ -93,6 +93,7 @@ class Attendance(models.Model):
     fullname = models.CharField(null=True, blank=True, max_length=255)
     type = models.CharField(null=True, blank=True, max_length=255)
     scan_time = models.TimeField(default=datetime.now().strftime("%H:%M:%S"))
+    
 
 class RfidLogs(models.Model): 
     user = models.CharField(null=True, blank=True, max_length=255)

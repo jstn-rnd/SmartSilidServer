@@ -1,6 +1,9 @@
 import pandas as pd
 import openpyxl
-from openpyxl.styles import Alignment, Font, Border, Side
+from openpyxl.styles import Alignment, Font, Border, Side, PatternFill
+from openpyxl.utils import get_column_letter
+from openpyxl import Workbook
+from openpyxl.styles.borders import Border, Side
 from django.http import HttpResponse
 from datetime import date
 from django.utils import timezone
@@ -11,6 +14,12 @@ from .models import Computer, Semester, Schedule, RfidLogs, ClassInstance, Atten
 from .forms import ScheduleForm
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
+from datetime import datetime as datetime2
+from django.utils.dateparse import parse_date
+import math
+import datetime
+from datetime import timedelta
+from .utils import format_fullname, format_fullname_lastname_first
 
 
 def parse_date(date_str):
@@ -325,40 +334,61 @@ def generate_rfid_report_excel(request):
 
     return response
 
+def parse_log_time(log_time):
+    """Convert log_time to a datetime object, handling 'Did not attend' or None."""
+    if log_time == "Did not attend" or log_time is None:
+        return None  # or return a default time if needed (e.g., datetime.time(23, 59))
+    if isinstance(log_time, str):
+        try:
+            # If log_time is a string, convert it to a time object (assuming format HH:MM:SS)
+            return datetime.strptime(log_time, "%H:%M:%S").time()
+        except ValueError:
+            return None  # Handle invalid time format gracefully
+    return log_time  # If it's already a datetime.time object, return it as-is
+
+def sort_dataframe(df, sort_by):
+    """Sort the dataframe by the given sort type."""
+    # Convert log_time to datetime objects for comparison
+    df['Log Time'] = df['Log Time'].apply(parse_log_time)
+
+    if sort_by == "asc_by_name":
+        df = df.sort_values(by="Name", ascending=True)
+    elif sort_by == "desc_by_name":
+        df = df.sort_values(by="Name", ascending=False)
+    elif sort_by == "asc_by_time":
+        df = df.sort_values(by="Log Time", ascending=True, na_position='last')  # Ensure NaT values are handled
+    elif sort_by == "desc_by_time":
+        df = df.sort_values(by="Log Time", ascending=False, na_position='last')  # Ensure NaT values are handled
+    return df
+
 @api_view(['GET'])
 def generate_attendance_report_excel(request):
-    # Get schedule_id, semester_id, and schedule_date from the request's query parameters
+    # Get filters from request
     schedule_id = request.query_params.get("schedule_id")
     semester_id = request.query_params.get("semester_id")
     schedule_date = request.query_params.get("schedule_date")
+    sort_by = request.query_params.get("sort_by", "asc_by_name")  # Default sort is ascending by name
 
     # Initialize queryset for class instances
     class_instances = ClassInstance.objects.all()
 
-    # Filter by semester_id if provided
+    # Apply filters (same as before)
     if semester_id:
-        # Ensure the semester exists
         semester = Semester.objects.filter(id=semester_id).first()
         if not semester:
             return Response({"status_message": "Semester does not exist"}, status=400)
-
-        # Fetch all schedules for that semester
         schedules_in_semester = Schedule.objects.filter(semester=semester)
         class_instances = class_instances.filter(schedule__in=schedules_in_semester)
 
-    # Filter by schedule_id if provided
     if schedule_id:
         schedule = Schedule.objects.filter(id=schedule_id).first()
         if not schedule:
             return Response({"status_message": "Schedule does not exist"}, status=400)
         class_instances = class_instances.filter(schedule=schedule)
 
-    # Filter by schedule_date if provided
     if schedule_date:
-        # Filter ClassInstance by schedule's date (schedule.date)
         class_instances = class_instances.filter(date=schedule_date)
 
-    # If no class instances are found, return a 404 response
     if not class_instances:
         return Response({"status_message": "No class instances found for the given filters"}, status=404)
 
@@ -367,19 +397,20 @@ def generate_attendance_report_excel(request):
     response['Content-Disposition'] = 'attachment; filename=attendance_report.xlsx'
 
     with pd.ExcelWriter(response, engine='openpyxl') as writer:
+        all_attendance_data = []  # List to hold all the data for each class instance
+
         for class_instance in class_instances:
             date = class_instance.date
             schedule = class_instance.schedule
             section = schedule.section
-            subject = schedule.subject  # Get the subject from the related Schedule model
+            subject = schedule.subject
 
             # Prepare data for the current class instance
             attendance_data = []
 
-            # Get faculty attendance
             faculty_attendance = Attendance.objects.filter(class_instance=class_instance, type="faculty").first()
             if faculty_attendance:
-                faculty_fullname = f"{schedule.faculty.first_name} {schedule.faculty.middle_initial}. {schedule.faculty.last_name}"
+                faculty_fullname = f"{schedule.faculty.last_name}, {schedule.faculty.first_name} {schedule.faculty.middle_initial}."
                 faculty_entry = {
                     "fullname": faculty_fullname,
                     "log_time": faculty_attendance.scan_time,
@@ -387,39 +418,38 @@ def generate_attendance_report_excel(request):
                 }
             else:
                 faculty_entry = {
-                    "fullname": f"{schedule.faculty.first_name} {schedule.faculty.middle_initial}. {schedule.faculty.last_name}",
+                    "fullname": f"{schedule.faculty.last_name}, {schedule.faculty.first_name} {schedule.faculty.middle_initial}.",
                     "log_time": "Did not attend",
                     "type": "faculty"
                 }
 
-            # Get students' attendance
             students = Student.objects.filter(section=section)
             student_attendees = []
             for student in students:
                 attendance = Attendance.objects.filter(class_instance=class_instance, fullname=f"{student.first_name} {student.middle_initial}. {student.last_name}").first()
                 if attendance:
                     student_entry = {
-                        "fullname": attendance.fullname,
+                        "fullname": format_fullname_lastname_first(attendance.fullname),
                         "log_time": attendance.scan_time,
                         "type": attendance.type
                     }
                 else:
                     student_entry = {
-                        "fullname": f"{student.first_name} {student.middle_initial}. {student.last_name}",
+                        "fullname": f"{student.last_name}, {student.first_name} {student.middle_initial}.",
                         "log_time": "Did not attend",
                         "type": "student"
                     }
                 student_attendees.append(student_entry)
 
-            # Combine data for the class instance, including the subject
+            # Combine the attendance data
             attendance_data.append({
                 "date": date,
-                "subject": subject,  # Add subject to the data
+                "subject": subject,
                 "faculty": faculty_entry,
                 "attendees": student_attendees
             })
 
-            # Convert data to DataFrame for the current class instance
+            # Prepare the data for DataFrame
             data = []
             for record in attendance_data:
                 for attendee in record['attendees']:
@@ -428,17 +458,18 @@ def generate_attendance_report_excel(request):
             # Convert to DataFrame
             df = pd.DataFrame(data, columns=["Date", "Subject", "Name", "Log Time", "Type"])
 
-            # Use the class_instance's date and subject as the sheet name
-            sheet_name = f"{class_instance.date} - {class_instance.schedule.subject}"
+            # Sort data based on the 'sort_by' parameter
+            df = sort_dataframe(df, sort_by)
 
-            # Write the DataFrame to the sheet
+            # Use a unique sheet name based on the class instance's date and subject
+            sheet_name = f"{class_instance.date} - {class_instance.schedule.subject} - {class_instance.id}"
+
+            # Write DataFrame to Excel sheet
             df.to_excel(writer, index=False, sheet_name=sheet_name)
             sheet = writer.sheets[sheet_name]
 
-            # Set column widths
+            # Set column widths and formatting (same as before)
             set_column_widths(sheet, df)
-
-            # Format headers and apply borders
             format_headers(sheet)
             apply_borders(sheet)
 

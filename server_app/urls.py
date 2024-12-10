@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views_logs, views_rfid, views_student, views_blocked, views_wol, views_stream, views_monitoring
-from . import views_section, views_schedule, views_faculty, views_batch, views_reports, views_reports
+from . import views_section, views_schedule, views_faculty, views_batch, views_reports, views_reports, views_inputblock
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from . import consumers
@@ -58,8 +58,9 @@ urlpatterns = [
     path("delete_computers", views_wol.delete_computers),
     path("assign_all_computers", views_wol.assign_all_computer),
     path("unassign_all_computers", views_wol.unassign_all_computer),
+    
     # Add paths for stream control
-    # path('stream/status/', views_stream.stream_status, name='stream_status'),
+    path('stream/status/', views_stream.streaming_status, name='stream_status'),
     path('stream/start/', views_stream.start_stream, name='start_stream'),
     path('stream/stop/', views_stream.stop_stream, name='stop_stream'),
     path('stream/', views_stream.stream_view, name='stream_view'),
@@ -86,12 +87,15 @@ urlpatterns = [
     path("get_all_schedule", views_schedule.get_all_schedule, name = 'get_all_schedule'),
     path("update_schedule", views_schedule.update_schedule, name = 'update_schedule'),
     path("delete_schedule", views_schedule.delete_schedule, name ='delete_schedule'),
+    path("get_schedules_by_faculty_id", views_schedule.get_schedules_by_faculty_id, name = "get_schedule_by_faculty_id"),
+    path("get_subjects", views_schedule.get_subjects),
 
     path('upload_students', views_batch.upload_students_batch, name = 'upload_students'),
     path('upload_faculty', views_batch.upload_faculty_batch, name = 'upload_faculty'),
     
     #attendace
     path("get_attendance_info", views_rfid.get_attendance_info),
+    path("get_cumulative_attendance", views_rfid.get_cumulative_attendance),
 
     #semester 
     path("start_semester", views_schedule.start_semester), 
@@ -106,5 +110,11 @@ urlpatterns = [
    #new url for rfid log generation:
     path('rfid-report/excel/', views_reports.generate_rfid_report_excel, name='rfid_report_excel'),
     path('attendance-report/excel/', views_reports.generate_attendance_report_excel, name='attendance_report_excel'),
+    path('cumulative-report/excel/', views_rfid.generate_cumulative_and_summary_reports, name='cumulative-report/excel/'),
+    
+    #input Blocking
+    path("input_block", views_inputblock.block_input, name='input_block'),
+    path("input_unblock", views_inputblock.unblock_input, name='input_unblock'),
+
 ]
 

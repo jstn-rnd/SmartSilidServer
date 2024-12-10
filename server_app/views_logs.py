@@ -64,15 +64,19 @@ def add_user_logoff(request):
     date = datetime.today().date()
     logoffTime = datetime.now().time().strftime("%H:%M:%S")
 
-    old_computer = Computer.objects.filter(computer_name = computer_name).first
+    print(username)
+
+    old_computer = Computer.objects.filter(computer_name = computer_name).first()
     computer = change_computer_name(computer_name, mac_address)
 
-    if old_computer == computer.computer_name:
-        computer_name = computer.computer_name
+    if old_computer == computer:
+        current_computer = computer
     else : 
-        computer_name = old_computer
+        current_computer = old_computer
+
+    computer_name = current_computer.computer_name
     
-    student = Student.objects.filter(username = username).first()
+    student = Student.objects.filter(username__iexact = username).first()
 
     if student: 
         latest_user_log = UserLog.objects.filter(
@@ -83,9 +87,11 @@ def add_user_logoff(request):
             logoffTime__isnull=True).order_by("-date", "-logonTime").first()
 
     elif not student: 
-        user = User.objects.filter(username = username).first()
+        user = User.objects.filter(username__iexact = username).first()
+        fullname = format_fullname(user.first_name, user.middle_initial, user.last_name)
+
         latest_user_log = UserLog.objects.filter(
-            user = format_fullname(user.first_name, user.middle_initial, user.last_name),  
+            user = fullname,  
             computer = computer_name, 
             section = "faculty",
             date = date, 
@@ -98,6 +104,9 @@ def add_user_logoff(request):
 
     latest_user_log.logoffTime = logoffTime
     latest_user_log.save()
+
+    current_computer.status = 0 
+    current_computer.save()
     
     return Response({'status_message': 'success'})
 

@@ -1,6 +1,10 @@
 import datetime
+import pyad.adcomputer
+import pyad.adcontainer
 import pytz
 import win32com.client
+from .configurations import AD_BASE_DN
+import pyad
 
 def convert_time(time): 
     timestamp_ms = int(time[6:-2])
@@ -110,7 +114,7 @@ def remove_url_from_blacklist(url):
     """Remove a URL from the blacklist and update GPO."""
     try:
         # Remove URL from Django model
-        Blacklist.objects.filter(url=url).delete()
+        Blacklist.objects.filter(url=url).delete() 
         
         # Retrieve the GPO for updating
         gpo = get_gpo(settings.GPO_GUID)
@@ -132,3 +136,24 @@ def convert_time(time_str):
 def format_fullname(first, middle, last): 
     return f"{first} {middle}. {last}"
 
+def add_computer_to_ou(computer_name): 
+    ou_dn = f"OU=Computers,OU=SmartSilid-Users,{AD_BASE_DN}"
+    target_ou = pyad.adcontainer.ADContainer.from_dn(ou_dn)
+    new_computer = pyad.adcomputer.ADComputer.create(computer_name, target_ou)
+
+def format_fullname_lastname_first(fullname): 
+    if not fullname.strip():
+        return ""
+
+    parts = fullname.strip().split()
+
+    middle_initial_index = next((i for i, part in enumerate(parts) if part.endswith(".")), None)
+
+    if middle_initial_index is None or middle_initial_index == 0 or middle_initial_index == len(parts) - 1:
+        return fullname.strip()
+
+    firstname = "".join(parts[:middle_initial_index])
+    middle_initial = parts[middle_initial_index]
+    lastname = "".join(parts[middle_initial_index + 1:])
+
+    return f"{lastname}, {firstname} {middle_initial}"

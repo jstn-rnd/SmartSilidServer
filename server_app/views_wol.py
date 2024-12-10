@@ -9,6 +9,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from server_app.Utils.computer_utls import change_computer_name
 
+
 def normalize_mac(mac_address):
     """Normalize MAC address to be without hyphens and lowercase."""
     return mac_address.replace('-', ':').lower()
@@ -18,25 +19,73 @@ def get_ip_from_mac(mac_address):
     try:
         result = subprocess.run(['arp', '-a'], capture_output=True, text=True)
         arp_table = result.stdout
-        
+        print(arp_table)
         # Normalize the MAC address to match the format in the ARP table
         normalized_mac = normalize_mac(mac_address)
-        
-        # Log ARP table for debugging
-        print("ARP Table:")
-        print(arp_table)
         
         for line in arp_table.splitlines():
             parts = line.split()
             if len(parts) >= 3 and normalize_mac(parts[1]) == normalized_mac:
                 ip_address = parts[0]
-                print(f"Found IP address {ip_address} for MAC address {mac_address}")
+                print(f"MAC address {mac_address} found in ARP table.")
                 return ip_address
     except Exception as e:
         print(f"Error while retrieving IP from MAC: {e}")
     
     print(f"MAC address {mac_address} not found in ARP table.")
     return None
+
+
+def arp_for_state(computers): 
+    try:
+        result = subprocess.run(['arp', '-a'], capture_output=True, text=True)
+        arp_table = result.stdout
+        print(arp_table)
+
+        active_computers = []
+        inactive_computers = []
+        
+        for computer in computers: 
+            normalized_mac = normalize_mac(computer.mac_address)
+            found = False
+        
+            for line in arp_table.splitlines():
+                parts = line.split()
+                if len(parts) >= 3 and normalize_mac(parts[1]) == normalized_mac:
+                    active_computers.append(computer.computer_name)
+                    found = True
+                    break    
+                
+            if found != True : 
+                inactive_computers.append(computer.computer_name)
+
+        response = {
+            "active" : active_computers,
+            "inactive" : inactive_computers
+        }
+
+        return response
+    
+    except Exception as e:
+        print(f"Error while retrieving IP from MAC: {e}")
+        return None
+    
+
+def reset_arp(): 
+    try : 
+        result = subprocess.run(["ipconfig"], capture_output=True, text=True)
+        for line in result.stdout.splitlines():
+            if "Default Gateway" in line:
+                gateway =  line.split(":")[1].strip()
+                gateway = gateway.strip()
+                print(f"ping {gateway}")
+                result = subprocess.run(['ping', '{gateway}', '-n', 1], capture_output=True, text=True)
+                print(result)
+
+        return None
+    except Exception as e : 
+        return None
+
 
 #authentication
 @api_view(['POST'])
@@ -53,6 +102,7 @@ def wake_computers(request):
             student_mac = Computer.objects.filter(computer_name=computer).first()
             if student_mac:
                 print(student_mac.computer_name)
+                print(student_mac.mac_address)
                 normalized_mac = normalize_mac(student_mac.mac_address)
                 value = send_magic_packet(normalized_mac)
                 print(value)
@@ -106,22 +156,66 @@ def shutdown_computers(request):
         except Exception as e:
             failed_computers.append((computer, f"Exception occurred: {str(e)}"))
     
+    time.sleep(30)
+
+    for computer in computers : 
+
+        student_mac = Computer.objects.filter(computer_name=computer).first()
+        print(computer)
+        
+        if not student_mac:
+            failed_computers.append((computer, "MAC address not found"))
+            continue
+        
+        original_mac_address = student_mac.mac_address
+        ip_address = get_ip_from_mac(original_mac_address)
+
+        if not ip_address:
+            failed_computers.append((computer, f"IP address not found for MAC address {original_mac_address}"))
+            continue
+        
+        command = ['arp', '-d', ip_address]
+        print(f"Executing command: {' '.join(command)}")
+        result = subprocess.run(command, shell=True, capture_output=True, text=True)
+        print(f"arp remove result {result.returncode}")
+        print(result.stdout)
+        print(result.stderr)
+
+        is_ip_still_found = get_ip_from_mac(original_mac_address)
+        print(is_ip_still_found)
+
+    
     if failed_computers:
         error_messages = "\n".join([f"Failed to shutdown {comp} (MAC: {Computer.objects.filter(computer_name=comp).first().mac_address}): {err}" for comp, err in failed_computers])
         response = f"Some shutdown commands failed:\n{error_messages}"
         return Response({"status message" : response})
     
     return Response({ "status_message" : "Shutdown commands sent successfully"})
-    
+
     
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_all_computers(request): 
+
+    reset_arp()
+
     computers = Computer.objects.all()
+    computers_with_state = arp_for_state(computers)
+    active_computers = computers_with_state["active"]
+    inactive_computers = computers_with_state["inactive"]
 
     response_json = []
 
     for computer in computers : 
+
+        if computer.computer_name in active_computers: 
+            computer.status = 1
+            computer.save()
+
+        elif computer.computer_name in inactive_computers: 
+            computer.status = 0
+            computer.save()
+
         response_json.append({
             "computer_name" : computer.computer_name,
             "status" : computer.status, 
@@ -247,7 +341,7 @@ def assign_all_computer(request):
             "status_message" : "Section not found"
         })
 
-    students = Student.objects.filter(section=section).order_by('lastname', 'firstname', 'middle_initial')
+    students = Student.objects.filter(section=section).order_by('last_name', 'first_name', 'middle_initial')
     
     scans_list = []
     for student in students:

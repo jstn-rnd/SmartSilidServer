@@ -9,7 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
 from django.shortcuts import render, HttpResponse, get_object_or_404
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from wakeonlan import send_magic_packet
 
@@ -25,8 +25,13 @@ from django.utils.dateparse import parse_date
 from datetime import date
 import math
 import datetime
+from datetime import timedelta
+from .utils import format_fullname, format_fullname_lastname_first
 
-
+import pandas as pd
+import openpyxl
+from openpyxl.styles import Alignment, Font, Border, Side, PatternFill
+from openpyxl.utils import get_column_letter
 
 def view_records(request):
     
@@ -191,6 +196,7 @@ def check_rfid(request):
             class_object = None
 
         if scan.faculty != None and scan.student == None :
+            print(scan.faculty)
             user = scan.faculty
             type = "faculty"
             hasClass = False
@@ -212,7 +218,8 @@ def check_rfid(request):
 
         logs = RfidLogs(
             user = fullname,
-            type = type
+            type = type, 
+            scan_time = datetime.datetime.now().strftime("%H:%M:%S")
         )
 
         logs.save()
@@ -229,9 +236,18 @@ def check_rfid(request):
                     class_instance = class_object, 
                     fullname = fullname,
                     type = type, 
+                    scan_time = datetime.datetime.now().strftime("%H:%M:%S")
                 )
 
                 attendance.save()
+
+        if scan.faculty != None and scan.student == None : 
+            computer = Computer.objects.filter(is_admin = 1).first()
+            print(computer)
+            normalize_macs = normalize_mac(computer.mac_address)
+            send_magic_packet(normalize_macs)
+            computer.status = 1
+            computer.save()
 
         if scan.computer : 
             print(scan.computer.mac_address)
@@ -396,7 +412,7 @@ def get_logs_rfid(request):
     }
 
     if username:
-        filters['user'] = username
+        filters['user__icontains'] = username
 
     if type : 
         filters['type'] = type
@@ -462,48 +478,34 @@ def delete_rfid(request):
 @permission_classes([IsAuthenticated])
 def get_attendance_info(request): 
     schedule_id = request.data.get("schedule_id")
-    print(1)
+    sort_by = request.data.get("sort_by", None)
 
     if not schedule_id and not isinstance(schedule_id, int):
         return Response({
             "status_message" : "Invalid or missing input"
         })
     
-    print(2)
     
     schedule = Schedule.objects.filter(id = schedule_id).first()
-
-    print(3)
 
     if not schedule : 
         return Response({
             "status_message" : "Schedule does not exist"
         })
     
-    print(4)
-
     
     attendance_response = []
     class_response = []
 
     section = schedule.section
 
-    print(5)
-
     classes = ClassInstance.objects.filter(schedule = schedule)
 
-    print(6)
-
     for class_object in classes : 
-        print(7)
         class_response.append(class_object.date)
-        print(8)
         attendances = Attendance.objects.filter(class_instance = class_object)
-        print(9)
         students = Student.objects.filter(section = section)
-        print(10)
         faculty_attendance = Attendance.objects.filter(class_instance__schedule__faculty = schedule.faculty).first()
-        print(10)
         faculty = schedule.faculty
         fullname = f"{faculty.first_name} {faculty.middle_initial}. {faculty.last_name}"
         if faculty_attendance: 
@@ -526,33 +528,432 @@ def get_attendance_info(request):
             data = None
             for attendance in attendances:
                 if attendance.fullname == f"{student.first_name} {student.middle_initial}. {student.last_name}":
+                    formatted_start_time = datetime2.combine(datetime2.today(), schedule.start_time)
+                    formatted_scan_time = datetime2.combine(datetime2.today(), attendance.scan_time)
+                    if formatted_scan_time > formatted_start_time + timedelta(minutes=15):
+                        attendance_position = "late"
+                    
+                    elif formatted_scan_time > formatted_start_time + timedelta(minutes=30):
+                        attendance_position = "absent"
+
+                    else : 
+                        attendance_position = "present"
+
+                    name = format_fullname_lastname_first(attendance.fullname)
+
                     data = {
-                        "fullname": attendance.fullname,
+                        "fullname": name,
                         "log_time": attendance.scan_time,
-                        "type": attendance.type
+                        "type": attendance.type, 
+                        "attendance_position" : attendance_position
                     }
                     attendees.append(data)
             
             if data == None : 
                 data = {
-                    "fullname" : f"{student.first_name} {student.middle_initial}. {student.last_name}",
-                    "log_time": "Did not attend",
-                    "type": "student"
+                    "fullname" : f"{student.last_name}, {student.first_name} {student.middle_initial}. ",
+                    "log_time": None,
+                    "type": "student", 
+                    "attendance_position" : "absent"
                 }
                 attendees.append(data)
-            
+
+        if sort_by == "asc_by_name" : 
+            attendees.sort(key=lambda x: x["fullname"].lower())
+
+        elif sort_by == "desc_by_name" : 
+            attendees.sort(reverse=True, key=lambda x: x["fullname"].lower())
+
+        elif sort_by == "asc_by_time" or sort_by == None: 
+            attendees.sort(key=lambda x: (
+                datetime.strptime(x["log_time"], '%H:%M:%S').time() if isinstance(x["log_time"], str) 
+                else (x["log_time"] if x["log_time"] is not None else datetime2.max.time()),  
+                x["fullname"]
+            ))
+        
+        elif sort_by == "desc_by_time" :
+            attendees.sort(reverse=True, key=lambda x: (
+                datetime.strptime(x["log_time"], '%H:%M:%S').time() if isinstance(x["log_time"], str) 
+                else (x["log_time"] if x["log_time"] is not None else datetime2.max.time()),  
+                x["fullname"]
+            ))
+
+        
+        
         attendance_data = {
             "date" : class_object.date, 
+            "date_id" : class_object.id,
             "faculty" : faculty_response, 
             "attendees" : attendees
         }
 
         attendance_response.append(attendance_data)
 
+    print(attendance_response)
     return Response({
         "date" : class_response,
         "attendance" : attendance_response
     })
+
+
+@api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+def get_cumulative_attendance(request): 
+    schedule_id = request.data.get("schedule_id")
+
+    if not schedule_id : 
+        return Response({
+            "status" : 0, 
+            "status_message" : "Missing or invalid input"
+        })
+
+    schedule = Schedule.objects.filter(id = schedule_id).first()
+
+    if not schedule: 
+        return Response({
+            "status" : 0, 
+            "status_message" : "Schedule does not exist"
+        })
+
+    section = schedule.section
+
+    if not section : 
+        return Response({
+            "status" : 0, 
+            "status_message" : "Section does not exist"
+        })
+
+    students = Student.objects.filter(section = section).order_by("last_name", "first_name", "middle_initial")
+
+    response = []
+    students_response = []
+    class_instance_response = []
+
+    for student in students: 
+        fullname = format_fullname(student.first_name, student.middle_initial, student.last_name)
+        class_instances = ClassInstance.objects.filter(schedule = schedule)
+
+        present_classes = [] 
+        number_present = 0 
+        absent_classes = []
+        number_absent = 0 
+        late_classes = []
+        number_late = 0
+
+        for instance in class_instances: 
+            attendance = Attendance.objects.filter(fullname = fullname, class_instance = instance).first()
+
+            if not attendance : 
+                absent_classes.append(instance.date)
+                number_absent += 1
+                continue
+            
+            formatted_start_time = datetime2.combine(datetime2.today(), schedule.start_time)
+            formatted_scan_time = datetime2.combine(datetime2.today(), attendance.scan_time)
+            
+            if formatted_scan_time > formatted_start_time + timedelta(minutes=15):
+                late_classes.append(instance.date)
+                number_late += 1
+                continue
+
+            elif formatted_scan_time > formatted_start_time + timedelta(minutes=30):
+                attendance_position = "absent"
+                number_absent += 1
+                continue
+            
+            else : 
+                present_classes.append(instance.date)
+                number_present += 1
+                continue
+        
+        data = {
+            "fullname" : format_fullname_lastname_first(fullname), 
+            "absents" : absent_classes,
+            "number_absents" : number_absent,
+            "lates" : late_classes,
+            "number_lates" : number_late, 
+            "presents" : present_classes,
+            "number_presents" : number_present
+        }
+
+        students_response.append(data)
+
+    number_classes = 0
+    for instance in class_instances:
+        class_instance_response.append(instance.date)
+        number_classes += 1
+
+    students_response.sort(key=lambda x: x["fullname"])
+
+    data = {
+        "status" : 1, 
+        "status_message" : "Cumulative attendance has been obtained successfully", 
+        "dates" : class_instance_response, 
+        "number_classes" : number_classes, 
+        "attendees" : students_response
+    }
+
+    return Response(data)
+
+
+def apply_student_name_and_attendance_status_style(sheet, start_row=2, max_row=None):
+    # Apply a consistent style to student names and attendance statuses
+    light_blue_fill = PatternFill(start_color="E3F2FD", end_color="E3F2FD", fill_type="solid")  # Very Light Blue
+    white_fill = PatternFill(start_color="FFFFFF", end_color="FFFFFF", fill_type="solid")      # White
+    
+    present_fill = PatternFill(start_color="A5D6A7", end_color="A5D6A7", fill_type="solid")  # Green for Present
+    late_fill = PatternFill(start_color="FFEB3B", end_color="FFEB3B", fill_type="solid")     # Yellow for Late
+    absent_fill = PatternFill(start_color="FF8A80", end_color="FF8A80", fill_type="solid")   # Red for Absent
+
+    for row in sheet.iter_rows(min_row=start_row, max_row=max_row):
+        for cell in row:
+            if cell.column == 1:  # Apply styling to the "Student Name" column
+                # Alternate row colors for Student Names
+                if cell.row % 2 == 0:  # Even rows
+                    cell.fill = light_blue_fill
+                else:  # Odd rows
+                    cell.fill = white_fill
+                # Align student names to the left
+                cell.alignment = Alignment(horizontal="left", vertical="center")
+                # Set font color
+                cell.font = Font(color="000000")
+                # Add borders
+                cell.border = Border(bottom=Side(border_style="thin", color="D3D3D3"))
+
+            # Apply colors for attendance status (Present, Late, Absent)
+            elif cell.column > 1:  # If it's a cell in the attendance status columns
+                if cell.value == "Present":
+                    cell.fill = present_fill
+                elif cell.value == "Late":
+                    cell.fill = late_fill
+                elif cell.value == "Absent":
+                    cell.fill = absent_fill
+                # Align to center and set borders
+                cell.alignment = Alignment(horizontal="center", vertical="center")
+                cell.border = Border(bottom=Side(border_style="thin", color="D3D3D3"))
+
+@api_view(['GET'])
+def generate_cumulative_and_summary_reports(request):
+    schedule_id = request.query_params.get("schedule_id")
+
+    if not schedule_id:
+        return Response({"status_message": "Missing or invalid schedule_id"}, status=400)
+
+    schedule = Schedule.objects.filter(id=schedule_id).first()
+    if not schedule:
+        return Response({"status_message": "Schedule does not exist"}, status=400)
+
+    section = schedule.section
+    students = Student.objects.filter(section=section).order_by("last_name", "first_name", "middle_initial")
+    class_instances = ClassInstance.objects.filter(schedule=schedule)
+
+    total_classes = class_instances.count()
+    faculty_name = f"{schedule.faculty.first_name} {schedule.faculty.middle_initial}. {schedule.faculty.last_name}"
+    subject_name = schedule.subject
+
+    cumulative_data = []
+    summary_data = []
+
+    for student in students:
+        fullname = format_fullname(student.first_name, student.middle_initial, student.last_name)
+        attendance_statuses = []
+        days_present, days_late, days_absent = 0, 0, 0
+
+        for class_instance in class_instances:
+            attendance = Attendance.objects.filter(fullname=fullname, class_instance=class_instance).first()
+
+            if not attendance:
+                attendance_statuses.append("Absent")
+                days_absent += 1
+                continue
+
+            formatted_start_time = datetime2.combine(datetime2.today(), schedule.start_time)
+            formatted_scan_time = datetime2.combine(datetime2.today(), attendance.scan_time)
+
+            if formatted_scan_time > formatted_start_time + timedelta(minutes=15):
+                attendance_statuses.append("Late")
+                days_late += 1
+            elif formatted_scan_time <= formatted_start_time + timedelta(minutes=15):
+                attendance_statuses.append("Present")
+                days_present += 1
+            elif formatted_scan_time > formatted_start_time + timedelta(minutes=30):
+                attendance_statuses.append("Absent")
+                days_absent += 1
+
+        cumulative_data.append([format_fullname_lastname_first(fullname)] + attendance_statuses)
+        summary_data.append([format_fullname_lastname_first(fullname), days_present, days_late, days_absent])
+
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=attendance_reports.xlsx'
+
+    with pd.ExcelWriter(response, engine='openpyxl') as writer:
+        # Cumulative Attendance Report
+        cumulative_df = pd.DataFrame(
+            cumulative_data,
+            columns=["Student Name"] + [ci.date.strftime("%Y-%m-%d") for ci in class_instances]
+        )
+        cumulative_df.to_excel(writer, index=False, sheet_name="Cumulative Attendance")
+        cumulative_sheet = writer.sheets["Cumulative Attendance"]
+        cumulative_sheet.insert_rows(0)
+        cumulative_sheet["A1"] = f"Subject: {subject_name}    Total Classes: {total_classes}    Faculty: {faculty_name}"
+
+        # Apply header style
+        for cell in cumulative_sheet[1]:
+            cell.fill = PatternFill(start_color="3A6B8D", end_color="3A6B8D", fill_type="solid")  # Soft Blue
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+            cell.font = Font(bold=True, color="FFFFFF")  # Ensure font is white
+            cell.border = Border(bottom=Side(border_style="thin", color="000000"))
+
+        # Apply bold and left-aligned style for "Student Name" header (A1)
+        student_name_cell = cumulative_sheet['A1']
+        student_name_cell.font = Font(bold=True, color="FFFFFF")  # Set font to white
+        student_name_cell.alignment = Alignment(horizontal="left", vertical="center")
+
+        # Apply student name and attendance status styling using the new helper function
+        apply_student_name_and_attendance_status_style(cumulative_sheet)
+
+        # Automatically adjust column widths
+        for col in range(1, len(cumulative_data[0]) + 1):
+            max_length = 0
+            column = get_column_letter(col)
+            for row in cumulative_sheet.iter_rows(min_row=1, max_row=cumulative_sheet.max_row, min_col=col, max_col=col):
+                for cell in row:
+                    try:
+                        if len(str(cell.value)) > max_length:
+                            max_length = len(cell.value)
+                    except:
+                        pass
+            adjusted_width = (max_length + 2)  # Add some padding to the column width
+            cumulative_sheet.column_dimensions[column].width = adjusted_width
+
+        # Summary Attendance Report
+        summary_df = pd.DataFrame(
+            summary_data,
+            columns=["Student Name", "Days Present", "Days Late", "Days Absent"]
+        )
+        summary_df.to_excel(writer, index=False, sheet_name="Summary Attendance")
+        summary_sheet = writer.sheets["Summary Attendance"]
+        summary_sheet.insert_rows(0)
+        summary_sheet["A1"] = f"Subject: {subject_name}    Total Classes: {total_classes}    Faculty: {faculty_name}"
+
+        # Apply header style for summary sheet
+        for cell in summary_sheet[1]:
+            cell.fill = PatternFill(start_color="3A6B8D", end_color="3A6B8D", fill_type="solid")  # Soft Blue
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+            cell.font = Font(bold=True, color="FFFFFF")  # Ensure font is white
+            cell.border = Border(bottom=Side(border_style="thin", color="000000"))
+
+        # Apply bold and left-aligned style for "Student Name" header (A1) in summary sheet
+        student_name_cell_summary = summary_sheet['A1']
+        student_name_cell_summary.font = Font(bold=True, color="FFFFFF")  # Set font to white
+        student_name_cell_summary.alignment = Alignment(horizontal="left", vertical="center")
+
+        # Apply student name and attendance status styling using the new helper function
+        apply_student_name_and_attendance_status_style(summary_sheet)
+
+        # Automatically adjust column widths for the summary sheet
+        for col in range(1, len(summary_data[0]) + 1):
+            max_length = 0
+            column = get_column_letter(col)
+            for row in summary_sheet.iter_rows(min_row=1, max_row=summary_sheet.max_row, min_col=col, max_col=col):
+                for cell in row:
+                    try:
+                        if len(str(cell.value)) > max_length:
+                            max_length = len(cell.value)
+                    except:
+                        pass
+            adjusted_width = (max_length + 2)  # Add some padding to the column width
+            summary_sheet.column_dimensions[column].width = adjusted_width
+
+    return response
+
+
+@api_view(['POST'])
+# @permission_classes([IsAuthenticated])            
+def get_summary_attendance(request):
+    schedule_id = request.data.get("schedule_id")
+
+    if not schedule_id : 
+        return Response({
+            "status" : 0, 
+            "status_message" : "Missing or invalid input"
+        })
+
+    schedule = Schedule.objects.filter(id = schedule_id).first()
+
+    if not schedule: 
+        return Response({
+            "status" : 0, 
+            "status_message" : "Schedule does not exist"
+        })
+
+    section = schedule.section
+
+    if not section : 
+        return Response({
+            "status" : 0, 
+            "status_message" : "Section does not exist"
+        })
+
+    students = Student.objects.filter(section = section).order_by("last_name", "first_name", "middle_initial")
+
+    response = []
+    students_response = []
+    number_of_class_instance = 0
+
+    for student in students: 
+        fullname = format_fullname(student.first_name, student.middle_initial, student.last_name)
+        class_instances = ClassInstance.objects.filter(schedule = schedule)
+
+        present_classes = 0
+        absent_classes = 0
+        late_classes = 0
+
+        for instance in class_instances: 
+            attendance = Attendance.objects.filter(fullname = fullname, class_instance = instance).first()
+
+            if not attendance : 
+                absent_classes += 1
+                continue
+            
+            formatted_start_time = datetime2.combine(datetime2.today(), schedule.start_time)
+            formatted_scan_time = datetime2.combine(datetime2.today(), attendance.scan_time)
+            
+            if formatted_scan_time > formatted_start_time + timedelta(minutes=15):
+                late_classes += 1
+                continue
+            
+            else : 
+                present_classes += 1
+
+        data = {
+            "fullname" : fullname, 
+            "absents" : absent_classes,
+            "lates" : late_classes,
+            "presents" : present_classes
+        }
+
+        students_response.append(data)
+
+    for instance in class_instances:
+        number_of_class_instance += 1
+
+    data = {
+        "status" : 1, 
+        "status_message" : "Cumulative attendance has been obtained successfully", 
+        "number_of_class" : number_of_class_instance, 
+        "attendees" : students_response
+    }
+
+    return Response(data)
+
+            
+
+
+
+    
+
+
 
 
 

@@ -123,6 +123,7 @@ from server_app.settings import get_ad_connection
 from .models import Student, Section, User
 import pyad.aduser
 import pyad.adcontainer
+from pyad.pyadexceptions import win32Exception
 
 # Regular expression for password validation
 PASSWORD_REGEX = r'^(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$'
@@ -153,28 +154,40 @@ def upload_students_batch(request):
                 middle_initial = row.get('MiddleInitial', '')
                 section_name = row.get('Section', None)
 
+                print(username)
+                print(1)
+
                 # Validate required fields
-                if not password or not confirm_password or not first_name or not last_name:
-                    errors.append(f"Missing required fields for row {index + 1}. Skipping.")
+                if not password or not confirm_password or not username or not first_name or not last_name:
+                    print(2)
+                    errors.append({
+                        "username" : username,
+                        "error" : "Missing required fields. Skipping."})
                     continue
 
                 if password != confirm_password:
-                    errors.append(f"Passwords do not match for row {index + 1}. Skipping.")
+                    print(3)
+                    errors.append({
+                        "username" : username,
+                        "error" : "Passwords do not match."})
                     continue
 
                 # Validate password complexity
                 if not is_valid_password(password):
-                    errors.append(f"Password does not meet complexity requirements for row {index + 1}. It must be at least 8 characters long, include 1 uppercase letter, and 1 number. Skipping.")
+                    print(4)
+                    errors.append({
+                        "username" : username,
+                        "error" : "Password does not meet complexity requirements. It must be at least 8 characters long, include 1 uppercase letter, and 1 number. Skipping."})
                     continue
 
-                # Generate username if not provided
-                if username is None:
-                    username = f"{first_name}.{last_name}.{middle_initial}"
 
                 # Validate section existence
                 section_object = Section.objects.filter(name=section_name).first()
                 if not section_object:
-                    errors.append(f"Section '{section_name}' does not exist for {username}. Skipping.")
+                    print(5)
+                    errors.append({
+                        "username" : username,
+                        "error" : "Section '{section_name}' does not exist "})
                     continue
 
                 try:
@@ -208,15 +221,48 @@ def upload_students_batch(request):
                         student.save()
                         success_count += 1
                     else:
-                        errors.append(f"Failed to create AD user for {username}.")
+                        errors.append({
+                            "username" : username, 
+                            "error" : "Failed to create AD user"
+                        })
+
+                except win32Exception as e: 
+                    already_exist = "0x80071392" in str(e)
+                    password_history_error = "0x800708c5" in str(e)
+
+                    if password_history_error:
+                        user = pyad.aduser.ADUser.from_cn(username)
+                        user.delete()
+                        error_message = "Password error! Ensure that password is not similar to username or past password"
+
+                    if already_exist : 
+                        error_message = " Username is already being used within the domain"
+
+                    else : 
+                        error_message = str(e)
+                    
+                    print(username)
+                    print(str(e))
+                    print(6)
+
+                    errors.append({
+                        "username": username,
+                        "error": error_message
+                    })
 
                 except Exception as e:
-                    errors.append(f"Failed to create user {username}: {str(e)}")
+                    print(7)
+                    errors.append({
+                        "username" : username, 
+                        "error" : str(e)
+                    })
 
-            # Response with success and error details
+            status_message = {
+                "success_count" : success_count,
+                "failed_entries" : errors
+            }
             return Response({
-                "status_message": f"{success_count} users successfully created.",
-                "errors": errors
+                "status_message": status_message,
             }, status=207 if errors else 201)
 
         except Exception as e:
@@ -316,6 +362,9 @@ def upload_faculty_batch(request):
 
                 # Save the User record in the database if the AD user creation is successful
                 if new_faculty:
+                    admin_group = pyad.adgroup.ADGroup.from_cn("Domain Admins")
+                    new_faculty.add_to_group(admin_group)
+
                     faculty_db.save()
                     success_count += 1
                 else:
@@ -328,11 +377,30 @@ def upload_faculty_batch(request):
                     "username": username,
                     "error": "Failed to connect to Active Directory"
                 })
+
+        except win32Exception as e: 
+            already_exist = "0x80071392" in str(e)
+            password_history_error = "0x800708c5" in str(e)
+
+            if password_history_error:
+                user = pyad.aduser.ADUser.from_cn(username)
+                user.delete()
+                error_message = "Password error! Ensure that password is not similar to username or past password"
+
+            if already_exist : 
+                error_message = " Username is already being used within the domain"
+
+            failed_entries.append({
+                "username": username,
+                "error": error_message
+            })
+
         except Exception as e:
             failed_entries.append({
                 "username": username,
                 "error": str(e)
             })
+
 
     # Return a summary of the batch operation
     status_message = {
@@ -341,7 +409,7 @@ def upload_faculty_batch(request):
     }
 
     if failed_entries:
-        return Response({"status_message": status_message}, status=400)
+        return Response({"status_message": status_message})
     return Response({"status_message": status_message}, status=201)
 
 def validate_password(password):

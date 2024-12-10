@@ -6,6 +6,7 @@ from datetime import datetime, time, timedelta
 from django.utils.dateparse import parse_date
 from server_app.Utils.schedule_utils import check_if_time_is_valid, check_schedule_overlap, start_is_not_greater_than_end, check_schedule_overlap_with_specific_schedule
 from .utils import format_fullname
+import string
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -134,7 +135,7 @@ def update_schedule(request):
 
     if not id : 
         return Response({
-            "status_message" : "Id field is required"
+            "error_message" : "Id field is required"
         })
     
     error_message = []
@@ -142,7 +143,7 @@ def update_schedule(request):
 
     if not schedule: 
         return Response({
-            "status_message" : "Schedule not found"
+            "error_message" : "Schedule not found"
         })
 
     if subject: 
@@ -157,8 +158,13 @@ def update_schedule(request):
         else :
             error_message.append("Section is not found")
 
-    if start_time: 
+    schedule_start_text = str(schedule.start_time)
+    if start_time and start_time != schedule_start_text: 
         try: 
+            print(2)
+            print(start_time)
+            print(schedule.start_time)
+            print(start_time == schedule.start_time)
             start = datetime.strptime(start_time, '%H:%M').time()
             end = schedule.end_time
 
@@ -180,8 +186,13 @@ def update_schedule(request):
             print("A")
             error_message.append("Invalid start time")
 
-    if end_time: 
+    schedule_end_text = str(schedule.end_time)
+    if end_time and end_time != schedule_end_text: 
         try: 
+            print(1)
+            print(end_time)
+            print(schedule.end_time)
+            print(end_time == schedule.end_time)
             end = datetime.strptime(end_time, '%H:%M').time()
             start = schedule.start_time
             
@@ -226,7 +237,7 @@ def update_schedule(request):
 
     return Response({
         "status_message" : "Update was finished",
-        "error_message" : error_message 
+        "errors" : error_message 
     })
 
 @api_view(['POST'])
@@ -345,11 +356,91 @@ def get_schedule_by_semester(request):
         }
         response_json.append(data)
     
-    if semester :
+    return Response({
+        "status" : 1,
+        "status_message" : "Schedules has been obtained successfully", 
+        "semester" : semester.name, 
+        "semester_id" : semester.id, 
+        "schedules" : response_json
+    })
+    
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def get_schedules_by_faculty_id(request):
+    faculty_id = request.data.get("faculty_id")
+
+    if not faculty_id: 
         return Response({
-            "status" : 1,
-            "status_message" : "Schedules has been obtained successfully", 
-            "semester" : semester.name, 
-            "semester_id" : semester.id, 
-            "schedules" : response_json
+            "error_message" : "Invalid or missing input"
         })
+    
+    semester = Semester.objects.filter(isActive = True).first()
+
+    if not semester: 
+        return Response({
+            "error_message" : "There is no ongoing semester"
+        })
+
+    faculty = User.objects.filter(id = faculty_id).first()
+
+    if not faculty: 
+        return Response({
+            "error_message" : "Faculty does not exist"
+        })
+    
+    schedules = Schedule.objects.filter(faculty = faculty, semester = semester)
+
+    response_json = []
+
+    for schedule in schedules: 
+        data = {
+            'id' : schedule.id,
+            'subject' : schedule.subject,
+            'section' : schedule.section.name,
+            'start_time' : schedule.start_time,
+            'end_time' : schedule.end_time,
+            'weekdays' : schedule.weekdays,
+            'faculty' : schedule.faculty.username,
+        }
+        response_json.append(data)
+
+    return Response({
+        "status_message" : "Schedules has been obtained successfully",
+        "current_semester" : semester.name, 
+        "current_semester_id" : semester.id, 
+        "schedules" : response_json
+
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_subjects(request): 
+    semester = Semester.objects.filter(isActive = True).first()
+
+    if not semester : 
+        return Response({
+            "status" : 0, 
+            "status_message" : "No active semester"
+        })
+    
+    schedules = Schedule.objects.filter(semester = semester)
+    subjects = []
+
+    for schedule in schedules: 
+        if schedule.subject not in subjects: 
+            subjects.append(schedule.subject)
+    
+    subjects.sort()
+
+    return Response({
+        "status" : 1, 
+        "status_message" : "Subjects retrieved successfully", 
+        "subjects" : subjects
+    })
+
+
+
+        
+

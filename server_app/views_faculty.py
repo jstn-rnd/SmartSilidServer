@@ -16,7 +16,7 @@ from pyad.pyadexceptions import win32Exception
 
 # Gawing pywin32 based imbes na pyad 
 @api_view(['POST'])
-# @permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def create_faculty(request):
     username = request.data.get('username', None)
     password = request.data.get('password')
@@ -36,8 +36,10 @@ def create_faculty(request):
     if not type in choices : 
         return Response({"error_message" : "Invalid Input"})
     
-    if username == None : 
-        username = first_name + "." + last_name + "." + middle_initial
+    if len(username) > 20 or len(first_name) > 30 or len(last_name) > 30 or len(middle_initial) > 1 or len(password) > 30: 
+        return Response({
+            "error_message" : "Some inputs may be too long, please recheck it"
+        })
 
     if len(username) > 20:
         return Response({
@@ -101,8 +103,11 @@ def create_faculty(request):
             user.delete()
             error_message = "Password error! Ensure that password is not similar to username or past password"
 
-        if already_exist : 
+        elif already_exist : 
             error_message = " Username is already being used within the domain"
+
+        else : 
+            error_message = str(e)
 
         return Response({"error_message" : error_message})
             
@@ -187,8 +192,14 @@ def delete_faculty(request):
         faculty_user = pyad.aduser.ADUser.from_cn(username)
         faculty_user.delete()
 
+        scan = Scan.objects.filter(faculty = faculty_object).first()
+
+        if scan : 
+            scan.delete()
+
         faculty_object.delete()
         pythoncom.CoUninitialize()
+
 
         return Response({
             "status_message" : f"Faculty has been deleted successfully"
@@ -201,46 +212,6 @@ def delete_faculty(request):
             "status_message" : "Failed to delete section"
         })
 
-# @api_view(["POST"])
-# @permission_classes([IsAuthenticated])
-# def delete_faculty(request): 
-#     username = request.data.get("username")
-#     print(username)
-
-#     if not username : 
-#         return Response({
-#             "status_message" : "Missing input"
-#         })
-    
-#     faculty_object = User.objects.filter(username=username).first()
-
-#     if not faculty_object: 
-#         return Response({
-#             "status_message" : "Faculty not found"
-#         })
-
-    
-#     try : 
-      
-#         pythoncom.CoInitialize()
-#         parent_dn = f"OU=Faculty,OU=SmartSilid-Users,{AD_BASE_DN}"
-#         ad = win32com.client.Dispatch("ADsNameSpaces")
-#         ad_obj = ad.GetObject("", f"LDAP://{parent_dn}")
-#         user_object = ad_obj.Create("user", f"CN={username}") # HIndi dito nag ccreate, niloload lang ganun
-#         user_object.DeleteObject(0)
-#         faculty_object.delete()
-
-#         return Response({
-#             "status_message" : f"Faculty has been deleted successfully"
-#         })
-        
-#     except Exception as e : 
-#         # print(str(e))
-#         print("Access check failed:", str(e))
-#         return Response({
-#             "error" : str(e),
-#             "status_message" : "Failed to delete section"
-#         })
     
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
@@ -301,7 +272,6 @@ def update_faculty(request):
         ad = win32com.client.Dispatch("ADsNameSpaces")
         user_dn = f"CN={faculty.username},OU=Faculty,OU=SmartSilid-Users,{AD_BASE_DN}"
         user_ad_obj = ad.GetObject("", f"LDAP://{user_dn}")
-        print(1)
         
         if username and username != faculty.username: 
             if len(username) > 20: 
@@ -339,7 +309,8 @@ def update_faculty(request):
             if type in choices : 
                 faculty.type = type
             
-            errors.append("User type is wrong")
+            else : 
+                errors.append("User type is wrong")
 
         user_ad_obj.setInfo()
         faculty.save()
@@ -349,15 +320,42 @@ def update_faculty(request):
             "status_message" : "Update is completed",
             "errors" : errors
         })
+    
+    except win32Exception as e: 
+        print("A")
+        already_exist = "0x80071392" in str(e)
 
-    except Exception as e: 
+        if already_exist : 
+            error_message = " Username is already being used within the domain"
+
+        return Response({"error_message" : error_message})
+
+    except Exception as e:          
+        error_code = "0x8007202f"
+        password_error_code = "An invalid dn syntax has been specified"
+        input_error_code = "A constraint violation occurred"
+        already_exist = "The server is unwilling to process the request"
+
+        if error_code in str(e): 
+            error_message = "User might already exist or password format is incorrect"
+        
+        elif password_error_code in str(e): 
+            error_message = "Error in updating username, username might already be in use within the domain"
+        
+        elif input_error_code in str(e): 
+            error_message = "Error in updating faculty, please recheck your input"
+
+        elif already_exist in str(e): 
+            error_message = "Error in updating username, username might already be in use within the domain"
+        else :
+            error_message = str(e)
+        print(f"Failed to create user: {str(e)}")
+
         return Response({
-            "status_message" : f"Update has some errors {str(e)}",
-            "errors" : errors
-        })
+            "error_message" : error_message
+        }) 
 
     
-
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def get_faculty_by_id(request):
@@ -412,6 +410,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             access_token = refresh.access_token
             
             if user.hasWindows != 1: 
+                print(1)
                 return Response ({
                     "status_message" : "Invalid Account"
                 })
@@ -423,8 +422,10 @@ class CustomTokenObtainPairView(TokenObtainPairView):
                 'user_id': user.id,  # Include user ID in the response
                 'type': user.type
             }
+            print(2)
             return Response(response_data)
         else:
+            print(3)
             return Response({"detail": "Invalid credentials"})
         
 
@@ -443,17 +444,19 @@ def sign_up_admin(request):
         "initials": middle_initial  
         }
         
-    if username == None : 
-        username = first_name + "." + last_name + "." + middle_initial
+    if len(username) > 20 or len(first_name) > 30 or len(last_name) > 30 or len(middle_initial) > 1 or len(password) > 30: 
+        return Response({
+            "error_message" : "Some inputs may be too long, please recheck it"
+        })
 
     if len(username) > 20:
         return Response({
-            "status_message" : f"Username {username} is too long"
+            "error_message" : f"Username {username} is too long"
         })
     
     if not (len(password) >= 8 and re.search(r"[A-Z]", password) and re.search(r"[a-z]", password) and re.search(r"[0-9]", password)):
         return Response({
-            "status_message" : "Invalid password format"
+            "error_message" : "Invalid password format"
         })
     
     try: 
@@ -461,14 +464,14 @@ def sign_up_admin(request):
 
         if existing_user: 
             return Response({
-                "status_message" : "Admin already exist"
+                "error_message" : "Admin already exist"
             })
         
         existing_user = User.objects.filter(username = username).first()
 
         if existing_user: 
             return Response({
-                "status_message" : "User already exist"
+                "error_message" : "User already exist"
             })
 
         faculty_db = User(
@@ -504,11 +507,28 @@ def sign_up_admin(request):
             return Response({"status_message" : "User succesfully created"})
         
         return Response({
-            "status_message" : "Cannot create user, error in database"
+            "error_message" : "Cannot create user, error in database"
         })
+    
+    except win32Exception as e: 
+        already_exist = "0x80071392" in str(e)
+        password_history_error = "0x800708c5" in str(e)
+
+        if password_history_error:
+            user = pyad.aduser.ADUser.from_cn(username)
+            user.delete()
+            error_message = "Password error! Ensure that password is not similar to username or past password"
+
+        elif already_exist : 
+            error_message = " Username is already being used within the domain"
+
+        else : 
+            error_message = str(e)
+
+        return Response({"error_message" : error_message})
             
     except Exception as e:
-        return Response({"status_message" : f"Error in creating user : {str(e)}"})
+        return Response({"error_message" : f"Error in creating user : {str(e)}"})
     
 
 @api_view(["POST"])
@@ -542,9 +562,18 @@ def change_password_faculty_by_faculty(request):
             return Response({"status_message" : "Student password change succesful"})
 
         return Response({
-            "status_message" : "old password is wrong"
+            "error_message" : "Incorrect old password"
         })
     
+    except win32Exception as e: 
+        password_history_error = "0x800708c5" in str(e)
+
+        if password_history_error:
+            error_message = "Password error! Ensure that password is not similar to username or past password"
+
+
+        return Response({"error_message" : error_message})
+
     except Exception as e:
            
         return Response({
@@ -581,6 +610,7 @@ def change_password_faculty_by_admin(request):
         return Response({"status_message" : "Student password change succesful"})
 
     except Exception as e:
+        print(str(e))
            
         return Response({
             "status_message" : "Student password change is unsuccesful",
